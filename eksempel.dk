@@ -1,0 +1,25 @@
+
+Goddag.
+    Lad A være et heltal.
+    Lad B være et heltal.
+
+    Sæt A til 0.
+    Sæt B til 10.
+
+    Så_længe A er_mindre_end B.
+    Goddag.
+        Sæt A til A plus 1.
+        Udput A.
+    Farvel.
+
+    Hvis A er_lig_med B.
+    Goddag.
+        Udput 123.
+    Farvel.
+    Ellers.
+        Udput 321.
+
+    Sæt A til 1.
+    Sæt B til A plus 1432.
+    Udput B.
+Farvel.

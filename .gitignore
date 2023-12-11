@@ -1,0 +1,11 @@
+.vs/
+*.user
+
+bin/
+obj/
+build/
+Debug/
+Release/
+/x64/
+/x86/
+StructLayoutSettings.json
