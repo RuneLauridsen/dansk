@@ -99,8 +99,7 @@ static var_value eval_expr(interp *interp, ast_expr *expr) {
         } break;
 
         case AST_EXPR_KIND_LITERAL: {
-            ret.kind = VAR_KIND_I64;
-            ret.as_i64 = expr->as_literal.i64;
+            ret = expr->as_literal.value;
         } break;
 
         case AST_EXPR_KIND_BINOP: {
@@ -111,14 +110,6 @@ static var_value eval_expr(interp *interp, ast_expr *expr) {
     }
 
     return ret;
-}
-
-static void print_var_value(var_value value) {
-    switch (value.kind) {
-        case VAR_KIND_I64: println("%", value.as_i64); break;
-        case VAR_KIND_F64: println("%", value.as_f64); break;
-        default: assert(!"Invalid code path"); break;
-    }
 }
 
 static void print_decl(decl *decl) {

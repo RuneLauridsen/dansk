@@ -82,7 +82,7 @@ static ast_expr *parse_expr_ident_or_literal(parser *parser) {
         case TOKEN_KIND_LITERAL: {
             consume_token(parser);
             expr->kind = AST_EXPR_KIND_LITERAL;
-            expr->as_literal.i64 = t.i64;
+            expr->as_literal.value = t.var_value;
         } break;
 
         default: {

@@ -2,24 +2,29 @@
 Goddag.
     Lad A være et heltal.
     Lad B være et heltal.
+    Lad C være en flyder.
 
     Sæt A til 0.
     Sæt B til 10.
+    Sæt C til 123,456.
+
+    Sæt C til C plus 43,21.
+    Udskriv_i_konsol C.
 
     Så_længe A er_mindre_end B.
     Goddag.
         Sæt A til A plus 1.
-        Udput A.
+        Udskriv_i_konsol A.
     Farvel.
 
     Hvis A er_lig_med B.
     Goddag.
-        Udput 123.
+        Udskriv_i_konsol 123.
     Farvel.
     Ellers.
-        Udput 321.
+        Udskriv_i_konsol 321.
 
     Sæt A til 1.
     Sæt B til A plus 1432.
-    Udput B.
+    Udskriv_i_konsol B.
 Farvel.

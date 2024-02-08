@@ -22,6 +22,14 @@ static void print_indentation(i32 depth) {
     }
 }
 
+static void print_var_value(var_value value) {
+    switch (value.kind) {
+        case VAR_KIND_I64: println("%", value.as_i64); break;
+        case VAR_KIND_F64: println("%", value.as_f64); break;
+        default: assert(!"Invalid code path"); break;
+    }
+}
+
 static void print_ast_expr(ast_expr *expr, i32 depth) {
     switch (expr->kind) {
         case AST_EXPR_KIND_IDENT: {
@@ -31,7 +39,9 @@ static void print_ast_expr(ast_expr *expr, i32 depth) {
 
         case AST_EXPR_KIND_LITERAL: {
             print_indentation(depth);
-            println("expr-literal %", expr->as_literal.i64);
+            print("expr-literal ");
+            print_var_value(expr->as_literal.value);
+            print("\n");
         } break;
 
         case AST_EXPR_KIND_BINOP: {

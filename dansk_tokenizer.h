@@ -14,6 +14,19 @@ typedef enum token_kind {
     TOKEN_KIND_COUNT,
 } token_kind;
 
+typedef enum var_kind {
+    VAR_KIND_NONE,
+    VAR_KIND_I64,
+    VAR_KIND_F64,
+    VAR_KIND_COUNT,
+} var_kind;
+
+typedef struct var_value var_value;
+struct var_value {
+    var_kind kind;
+    union { i64 as_i64; f64 as_f64; };
+};
+
 // @Size
 typedef struct token token;
 struct token {
@@ -24,7 +37,7 @@ struct token {
 
     keyword keyword;
     operator operator;
-    i64 i64;
+    var_value var_value;
 };
 
 ////////////////////////////////////////////////////////////////

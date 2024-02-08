@@ -1,15 +1,3 @@
-typedef enum var_kind {
-    VAR_KIND_NONE,
-    VAR_KIND_I64,
-    VAR_KIND_F64,
-    VAR_KIND_COUNT,
-} var_kind;
-
-typedef struct var_value var_value;
-struct var_value {
-    var_kind kind;
-    union { i64 as_i64; f64 as_f64; };
-};
 
 typedef struct ast_decl ast_decl;
 struct ast_decl {
@@ -39,7 +27,7 @@ struct ast_ident {
 
 typedef struct ast_literal ast_literal;
 struct ast_literal {
-    i64 i64;
+    var_value value;
 };
 
 typedef struct ast_expr ast_expr;

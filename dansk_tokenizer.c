@@ -24,7 +24,7 @@ static void print_token(token token) {
             println("%:% \t % \t %var \t %",
                     token.linenumber,
                     token.column,
-                    token_kind_as_str(token.kind), token.str, token.i64);
+                    token_kind_as_str(token.kind), token.str, token.var_value.as_i64);
         } break;
 
         default: {
@@ -139,7 +139,7 @@ static token tok_next_token(tokenizer *t) {
     } else if (is_ascii_digit(c)) {
         i64 start_at = t->at;
 
-        while (tok_not_done(t) && is_ascii_digit(tok_at(t))) {
+        while (tok_not_done(t) && (is_ascii_digit(tok_at(t)) || tok_at(t) == ',')) {
             tok_advance(t);
         }
 
@@ -151,7 +151,22 @@ static token tok_next_token(tokenizer *t) {
             str cstr = copy_str_null_terminate(&temp_arena, ret.str);
             char *start_ptr = (char *)cstr.v;
             char *end_ptr;
-            ret.i64 = strtoll(start_ptr, &end_ptr, 10);
+
+            bool is_decimal = false;
+            for (char *d = start_ptr; *d; d++) {
+                if (*d == ',') {
+                    *d = '.';
+                    is_decimal = true;
+                }
+            }
+
+            if (is_decimal) {
+                ret.var_value.as_f64 = strtof(start_ptr, &end_ptr);
+                ret.var_value.kind = VAR_KIND_F64;
+            } else {
+                ret.var_value.as_i64 = strtoll(start_ptr, &end_ptr, 10);
+                ret.var_value.kind = VAR_KIND_I64;
+            }
         }
 
     } else if (c == '.') {
