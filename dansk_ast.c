@@ -26,6 +26,7 @@ static void print_var_value(var_value value) {
     switch (value.kind) {
         case VAR_KIND_I64: println("%", value.as_i64); break;
         case VAR_KIND_F64: println("%", value.as_f64); break;
+        case VAR_KIND_BOOL: println("%", value.as_bool); break;
         default: assert(!"Invalid code path"); break;
     }
 }
@@ -98,9 +99,11 @@ static void print_ast_node(ast_node *node, i32 depth) {
             println("body-true");
             print_ast_node(if_.body_true, depth + 2);
 
-            print_indentation(depth + 1);
-            println("body-false");
-            print_ast_node(if_.body_false, depth + 2);
+            if (if_.body_false) {
+                print_indentation(depth + 1);
+                println("body-false");
+                print_ast_node(if_.body_false, depth + 2);
+            }
         } break;
 
         case AST_NODE_KIND_WHILE: {

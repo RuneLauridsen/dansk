@@ -154,6 +154,9 @@ static ast_node *parse_decl(parser *parser, ast_node *parent) {
         } else if (str_eq(var_kind_name, str("heltal"))) {
             var_kind = VAR_KIND_I64;
             consume_token(parser);
+        } else if (str_eq(var_kind_name, str("påstand"))) {
+            var_kind = VAR_KIND_BOOL;
+            consume_token(parser);
         } else {
             parser_exit_error(parser, tprint("Ukendt type '%'", var_kind_name));
         }
@@ -224,9 +227,11 @@ static ast_node *parse_if(parser *parser, ast_node *parent) {
     expect_and_consume(parser, TOKEN_KIND_PERIOD);
     ret->as_if.body_true = parse_node(parser, ret);
 
-    expect_and_consume_keyword(parser, KEYWORD_ELSE); // @Todo If statement without else block.
-    expect_and_consume(parser, TOKEN_KIND_PERIOD);
-    ret->as_if.body_false = parse_node(parser, ret);
+    if (peek_token(parser).keyword == KEYWORD_ELSE) {
+        expect_and_consume_keyword(parser, KEYWORD_ELSE); // @Todo If statement without else block.
+        expect_and_consume(parser, TOKEN_KIND_PERIOD);
+        ret->as_if.body_false = parse_node(parser, ret);
+    }
 
     return ret;
 }

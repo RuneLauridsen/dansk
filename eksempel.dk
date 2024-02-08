@@ -3,10 +3,19 @@ Goddag.
     Lad A være et heltal.
     Lad B være et heltal.
     Lad C være en flyder.
+    Lad D være en påstand.
 
     Sæt A til 0.
     Sæt B til 10.
     Sæt C til 123,456.
+    Sæt D til sand.
+
+    Hvis D er sand.
+    Goddag.
+        Lad E være et heltal.
+        Sæt E til 12345.
+        Udskriv_i_konsol E.
+    Farvel.
 
     Sæt C til C plus 43,21.
     Udskriv_i_konsol C.

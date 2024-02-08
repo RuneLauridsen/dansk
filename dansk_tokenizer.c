@@ -126,8 +126,18 @@ static token tok_next_token(tokenizer *t) {
 
         keyword keyword = keyword_from_spelling(ret.str);
         if (keyword) {
-            ret.kind = TOKEN_KIND_KEYWORD;
-            ret.keyword = keyword;
+            if (keyword == KEYWORD_TRUE) {
+                ret.kind              = TOKEN_KIND_LITERAL;
+                ret.var_value.kind    = VAR_KIND_BOOL;
+                ret.var_value.as_bool = true;
+            } else if (keyword == KEYWORD_FALSE) {
+                ret.kind              = TOKEN_KIND_LITERAL;
+                ret.var_value.kind    = VAR_KIND_BOOL;
+                ret.var_value.as_bool = false;
+            } else {
+                ret.kind = TOKEN_KIND_KEYWORD;
+                ret.keyword = keyword;
+            }
         }
 
         operator operator = operator_from_spelling(ret.str);

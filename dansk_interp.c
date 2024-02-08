@@ -44,6 +44,7 @@ static bool cast_var_value_to_bool(var_value a) {
     switch (a.kind) {
         case VAR_KIND_I64: ret = (bool)a.as_i64; break;
         case VAR_KIND_F64: ret = (bool)a.as_f64; break;
+        case VAR_KIND_BOOL: ret = (bool)a.as_bool; break;
         default: assert(!"Invalid code path"); break;
     }
     return ret;
@@ -78,6 +79,19 @@ static var_value eval_operator(var_value a, var_value b, operator o) {
                 case OPERATOR_GT:  ret.as_f64 = (a.as_f64 > b.as_f64); break;
                 case OPERATOR_LT:  ret.as_f64 = (a.as_f64 < b.as_f64); break;
                 case OPERATOR_EQ:  ret.as_f64 = (a.as_f64 == b.as_f64); break;
+                default: assert(!"Invalid code path"); break;
+            }
+        } break;
+
+        case VAR_KIND_BOOL: {
+            switch (o) {
+                case OPERATOR_ADD: ret.as_bool = (a.as_bool + b.as_bool); break;
+                case OPERATOR_SUB: ret.as_bool = (a.as_bool - b.as_bool); break;
+                case OPERATOR_MUL: ret.as_bool = (a.as_bool * b.as_bool); break;
+                case OPERATOR_DIV: ret.as_bool = (a.as_bool / b.as_bool); break;
+                case OPERATOR_GT:  ret.as_bool = (a.as_bool > b.as_bool); break;
+                case OPERATOR_LT:  ret.as_bool = (a.as_bool < b.as_bool); break;
+                case OPERATOR_EQ:  ret.as_bool = (a.as_bool == b.as_bool); break;
                 default: assert(!"Invalid code path"); break;
             }
         } break;
