@@ -8,7 +8,7 @@ static token peek_token(parser *parser) {
     token ret = make_eof_token();
     if (parser->token_iter.valid) {
         ret = *parser->token_iter.at;
-    } 
+    }
     return ret;
 }
 
@@ -157,6 +157,8 @@ static ast_node *parse_decl(parser *parser, ast_node *parent) {
         } else if (str_eq(var_kind_name, str("påstand"))) {
             var_kind = VAR_KIND_BOOL;
             consume_token(parser);
+        } else if (str_eq(var_kind_name, str("havelågekort"))) {
+            var_kind = VAR_KIND_MAP;
         } else {
             parser_exit_error(parser, tprint("Ukendt type '%'", var_kind_name));
         }
@@ -236,16 +238,22 @@ static ast_node *parse_if(parser *parser, ast_node *parent) {
     return ret;
 }
 
+static ast_node *parse_put(parser *parser, ast_node *parent) {
+    __nop();
+    return null;
+}
+
 static ast_node *parse_node(parser *parser, ast_node *parent) {
     ast_node *ret = null;
     token peek = expect_and_peek(parser, TOKEN_KIND_KEYWORD);
     switch (peek.keyword) {
-        case KEYWORD_DECL: ret = parse_decl(parser, parent); break;
-        case KEYWORD_ASSIGN: ret = parse_assign(parser, parent); break;
-        case KEYWORD_OUTPUT: ret = parse_output(parser, parent); break;
-        case KEYWORD_BEGIN_BLOCK: ret = parse_block(parser, parent); break;
-        case KEYWORD_WHILE: ret = parse_while(parser, parent); break;
-        case KEYWORD_IF: ret = parse_if(parser, parent); break;
+        case KEYWORD_DECL:          ret = parse_decl(parser, parent); break;
+        case KEYWORD_ASSIGN:        ret = parse_assign(parser, parent); break;
+        case KEYWORD_OUTPUT:        ret = parse_output(parser, parent); break;
+        case KEYWORD_BEGIN_BLOCK:   ret = parse_block(parser, parent); break;
+        case KEYWORD_WHILE:         ret = parse_while(parser, parent); break;
+        case KEYWORD_IF:            ret = parse_if(parser, parent); break;
+        case KEYWORD_PUT:           ret = parse_put(parser, parent); break;
         default: assert(!"Unknown keyword"); break;
     }
 

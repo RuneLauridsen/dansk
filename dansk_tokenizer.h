@@ -19,6 +19,7 @@ typedef enum var_kind {
     VAR_KIND_I64,
     VAR_KIND_F64,
     VAR_KIND_BOOL,
+    VAR_KIND_MAP,
     VAR_KIND_COUNT,
 } var_kind;
 

@@ -14,6 +14,7 @@ typedef enum keyword {
     KEYWORD_WHILE,
     KEYWORD_TRUE,
     KEYWORD_FALSE,
+    KEYWORD_PUT,
 
     KEYWORD_COUNT,
 } keyword;
@@ -46,6 +47,7 @@ static readonly str keyword_names[] = {
     [KEYWORD_WHILE]       = static_str("KEYWORD_WHILE"),
     [KEYWORD_TRUE]        = static_str("KEYWORD_TRUE"),  
     [KEYWORD_FALSE]       = static_str("KEYWORD_FALSE"),     
+    [KEYWORD_PUT]         = static_str("KEYWORD_PUT"),
 };
 
 static readonly str operator_names[] = {
@@ -72,6 +74,7 @@ static readonly span_str keyword_spellings[] = {
     [KEYWORD_WHILE]       = static_strs("Så_længe"), // @Todo Multi-word keywords e.g. "Så længe".
     [KEYWORD_TRUE]        = static_strs("sand", "sandt"),
     [KEYWORD_FALSE]       = static_strs("falsk", "falskt"),
+    [KEYWORD_PUT]         = static_strs("Læg"),
 };
 
 static readonly span_str operator_spellings[] = {
@@ -79,7 +82,7 @@ static readonly span_str operator_spellings[] = {
     [OPERATOR_SUB] = static_strs("minus"),
     [OPERATOR_MUL] = static_strs("gange"),
     [OPERATOR_DIV] = static_strs("divider"),
-    [OPERATOR_GT]  = static_strs("er_større_end"),
+    [OPERATOR_GT]  = static_strs("er_st'ørre_end"),
     [OPERATOR_LT]  = static_strs("er_mindre_end"),
     [OPERATOR_EQ]  = static_strs("er_lig_med", "er"),
 };

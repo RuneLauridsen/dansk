@@ -3,14 +3,21 @@ Goddag.
     Lad A være et heltal.
     Lad B være et heltal.
     Lad C være en flyder.
-    Lad D være en påstand.
+    Lad 🙃 være en påstand.
 
     Sæt A til 0.
     Sæt B til 10.
     Sæt C til 123,456.
-    Sæt D til sand.
+    Sæt 🙃 til sand.
+    
+    Lad ABC være et havelågekort.
+    Læg 12345 i ABC.
+    Nedtag 12345 fra ABC og gem i C.
+    Fjern 12345 fra ABC.
+    
+    Sæt C til find 12345 i ABC.
 
-    Hvis D er sand.
+    Hvis 🙃 er sand.
     Goddag.
         Lad E være et heltal.
         Sæt E til 12345.

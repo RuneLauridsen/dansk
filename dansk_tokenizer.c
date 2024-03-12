@@ -96,13 +96,14 @@ static bool is_danish_letter(u32 c) {
     bool ret = (c == U'Æ' || c == U'æ' ||
                 c == U'Ø' || c == U'ø' ||
                 c == U'Å' || c == U'å' ||
-                is_ascii_letter(c));
+                is_ascii_letter(c) || 
+                c >= 256);
 
     return ret;
 }
 
 static bool is_danish_word_char(u32 c) {
-    bool ret = (is_danish_letter(c) || c == '_');
+    bool ret = (is_danish_letter(c) || c == '_' );
     return ret;
 }
 
@@ -113,7 +114,7 @@ static token tok_next_token(tokenizer *t) {
     ret.column = t->at_column;
 
     u32 c = tok_at(t);
-    if (is_danish_word_char(c)) {
+    if (is_danish_word_char(c) || c >= 256) {
         i64 start_at = t->at;
 
         while (tok_not_done(t) && is_danish_word_char(tok_at(t))) {
