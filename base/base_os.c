@@ -23,7 +23,7 @@ static str os_read_entire_file(str file_name, arena *arena) {
 
     if (os_win32_valid_handle(file)) {
         u32 file_size = GetFileSize(file, 0);
-        ret.v = push_size_nz(arena, file_size + 1);
+        ret.v = arena_push_size_nz(arena, file_size + 1, 0);
         if (ret.v) {
             ret.v[0] = '\0';
 
@@ -91,7 +91,7 @@ static bool os_is_path_seperator(u32 c) {
     return ret;
 }
 
-static u32 os_get_logical_drives() {
+static u32 os_get_logical_drives(void) {
     return GetLogicalDrives();
 }
 
@@ -154,7 +154,7 @@ static bool os_file_iter_next(os_file_iter *iter, os_file_info *out, arena *aren
         wstr wpath = { 0 };
         wpath.v = iter->find_data.cFileName;
 
-        for_range(i32, i, 0, countof(iter->find_data.cFileName)) {
+        for_n (i32, i, countof(iter->find_data.cFileName)) {
             if (iter->find_data.cFileName[i] == '\0') {
                 break;
             }
@@ -186,7 +186,7 @@ static os_file_infos os_get_files_in_path(str path, i32 max, arena *arena) {
     os_file_iter iter;
     os_file_iter_begin(&iter, path, arena);
     while (ret.count < max && os_file_iter_next(&iter, &info, arena)) {
-        os_file_info *node = push_struct(arena, os_file_info);
+        os_file_info *node = arena_push_struct(arena, os_file_info);
         *node = info;
 
         slist_add(&ret, node);
@@ -205,16 +205,49 @@ static os_file_infos os_get_files_in_path(str path, i32 max, arena *arena) {
 //
 ////////////////////////////////////////////////////////////////
 
-static u64 os_get_performance_timestamp() {
+static u64 os_get_performance_timestamp(void) {
     u64 ret = 0;
     QueryPerformanceCounter(cast(LARGE_INTEGER *, &ret));
     return ret;
 }
 
-static f64 os_get_millis_between(u64 timestamp_a, u64 timestamp_b) {
-    u64 diff = timestamp_b - timestamp_a;
+static f64 os_get_millis_between(u64 t_begin, u64 t_end) {
+    u64 diff = t_end - t_begin;
     u64 freq = 1;
     QueryPerformanceFrequency(cast(LARGE_INTEGER *, &freq));
-    f64 ret = 1000.0 * f64(diff) / f64(freq);
+    f64 ret = 1000.0 * cast_f64(diff) / cast_f64(freq);
     return ret;
 }
+
+////////////////////////////////////////////////////////////////
+//
+//
+// Prof scope
+//
+//
+////////////////////////////////////////////////////////////////
+
+typedef struct prof_scope prof_scope;
+struct prof_scope {
+    bool init;
+    u64 t_begin;
+    u64 t_end;
+};
+
+static inline bool prof_scope_func(prof_scope *scope, char *name) {
+    if (!scope->init) {
+        scope->t_begin = os_get_performance_timestamp();
+        scope->init = true;
+        return true;
+    } else {
+        scope->t_end = os_get_performance_timestamp();
+        println("% us \t %", os_get_millis_between(scope->t_begin, scope->t_end) * 1000.0f, name);
+        return false;
+    }
+}
+
+#ifdef NDEBUG
+#define prof_scope(name) for(prof_scope _scope_ = {0}; prof_scope_func(&_scope_, name);)
+#else
+#define prof_scope(...)
+#endif

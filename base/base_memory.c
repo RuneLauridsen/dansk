@@ -6,10 +6,13 @@
 //
 ////////////////////////////////////////////////////////////////
 
+#pragma warning ( push )
+#pragma warning ( disable : 4255 ) // C4255: no function prototype given : converting '()' to '(void)'
 #ifdef TRACK_ALLOCATIONS
 #include "thirdparty/idk.h"
 #include "thirdparty/idk.c"
 #endif
+#pragma warning ( pop )
 
 ////////////////////////////////////////////////////////////////
 //
@@ -19,16 +22,18 @@
 //
 ////////////////////////////////////////////////////////////////
 
-static void *heap_alloc(ix size, bool init_to_zero) {
+static void *heap_alloc(u64 size, bool init_to_zero) {
     void *ret = HeapAlloc(GetProcessHeap(), init_to_zero ? HEAP_ZERO_MEMORY : 0, size);
+    assert(ret);
 #ifdef TRACK_ALLOCATIONS
     idk_track_alloc(IDK_LOCATION, ret, size);
 #endif
     return ret;
 }
 
-static void *heap_realloc(void *p, ix size, bool init_to_zero) {
+static void *heap_realloc(void *p, u64 size, bool init_to_zero) {
     void *ret = HeapReAlloc(GetProcessHeap(), init_to_zero ? HEAP_ZERO_MEMORY : 0, p, size);
+    assert(ret);
 #ifdef TRACK_ALLOCATIONS
     idk_track_realloc(IDK_LOCATION, p, ret, size);
 #endif
@@ -36,15 +41,17 @@ static void *heap_realloc(void *p, ix size, bool init_to_zero) {
 }
 
 static void heap_free(void *p) {
-    HeapFree(GetProcessHeap(), 0, p);
+    if (p) {
+        HeapFree(GetProcessHeap(), 0, p);
 #ifdef TRACK_ALLOCATIONS
-    idk_track_free(IDK_LOCATION, p);
+        idk_track_free(IDK_LOCATION, p);
 #endif
+    }
 }
 
-static span(void) heap_alloc_span_(ix count, ix elemsize, bool init_to_zero) {
-    span_void ret = { 0 };
-    ret.v = heap_alloc(count * elemsize, init_to_zero);
+static span(void) heap_alloc_span_(u64 count, u64 elem_size, bool init_to_zero) {
+    void_span ret = { 0 };
+    ret.v = heap_alloc(count * elem_size, init_to_zero);
     if (ret.v) {
         ret.count = count;
     }
@@ -59,60 +66,7 @@ static span(void) heap_alloc_span_(ix count, ix elemsize, bool init_to_zero) {
 //
 ////////////////////////////////////////////////////////////////
 
-static arena_block *next_arena_block(arena *arena, ix want_size) {
-    arena_block *ret = arena->first_block;
-    ix next_capacity = megabytes(1);
-    if (arena->current_block) {
-        ret = arena->current_block->next;
-        if (arena->kind == ARENA_KIND_EXPONENTIAL_CHAIN) {
-            next_capacity = arena->current_block->capacity * 2;
-        } else {
-            next_capacity = arena->current_block->capacity;
-        }
-
-        next_capacity = max(next_capacity, ix(want_size + sizeof(arena_block)));
-        next_capacity = u64_to_power_of_two(next_capacity);
-    }
-
-    if (!ret) {
-        void *new_memory = heap_alloc(next_capacity, false);
-        if (new_memory) {
-            // NOTE(rune): Store the new chain block inside itself.
-            ret = (arena_block *)new_memory;
-            zero(ret);
-            ret->capacity = next_capacity;
-        }
-    }
-
-    if (ret) {
-        dlist_stack_push(arena->current_block, ret);
-        ret->occupied = sizeof(*ret);
-
-        if (!arena->first_block) {
-            arena->first_block = ret;
-        }
-    }
-
-    return ret;
-}
-
-static void arena_init(arena *arena, void *memory, ix size) {
-    zero(arena);
-    unused(size, memory);
-}
-
-static bool arena_create(arena *arena, ix size, bool init_to_zero, arena_kind kind) {
-    zero(arena);
-    arena->kind = kind;
-
-    // @Todo Respect init_to_zero argument.
-    // @Todo Respect size argument. Current defaults to whatever is hardcoded in next_arena_block()
-    unused(init_to_zero, size);
-    next_arena_block(arena, 0);
-    return true;
-}
-
-static void free_arena(arena *arena) {
+static void arena_free(arena *arena) {
     arena_block *block = arena->first_block;
     while (block) {
         // NOTE(rune): We need to store to next pointer locally on the stack, since
@@ -126,152 +80,106 @@ static void free_arena(arena *arena) {
     zero(arena);
 }
 
-static ix arena_size_used(arena *arena) {
-    ix ret = 0;
-    for_ptr_list(arena_block, it, arena->first_block) {
-        ret += it->occupied;
-    }
-    return ret;
-}
-
 static void arena_reset(arena *arena) {
-    arena->current_block = null;
+    arena->mark.block = null;
+    arena->mark.occupied = 0;
 }
 
-static bool fits_in_arena_block(arena_block *block, ix size) {
-    bool ret = false;
-    if (block) {
-        ret = block->capacity >= block->occupied + size;
+static void *arena_push_size(arena *arena, u64 size, u64 align) {
+    void *ret = arena_push_size_nz(arena, size, align);
+    memset(ret, 0, size);
+    return ret;
+}
+
+static void *arena_push_size_nz(arena *arena, u64 size, u64 align) {
+    // Push empty space to ensure alignment.
+    if (align == 0)  align = 1;
+    arena->mark.occupied = u64_align_to_pow2(arena->mark.occupied, align);
+
+    // Do we need a new block?
+    arena_block *curr_block = arena->mark.block;
+    if (curr_block == null || arena->mark.occupied + size > curr_block->capacity) {
+        // Use an existing block if available.
+        u64 aligned_header_size = u64_align_to_pow2(sizeof(arena_block), align);
+        arena_block *next_block = curr_block ? curr_block->next : arena->first_block;
+        while (next_block) {
+            if (aligned_header_size + size <= next_block->capacity) {
+                break;
+            }
+
+            curr_block = next_block;
+            next_block = next_block->next;
+        }
+
+        // No existing block found -> allocate new block
+        if (next_block == null) {
+            u64 next_capacity = 4096;
+            if (curr_block) {
+                if (arena->growth == ARENA_GROWTH_EXPONENTIAL) next_capacity = curr_block->capacity * 2;
+                if (arena->growth == ARENA_GROWTH_LINEAR)      next_capacity = curr_block->capacity;
+            }
+
+            next_capacity = max(next_capacity, aligned_header_size + size);
+            next_capacity = u64_round_up_to_pow2(next_capacity);
+
+            next_block = (arena_block *)heap_alloc(next_capacity, false);
+            next_block->capacity = next_capacity;
+            next_block->next     = null;
+
+            if (arena->first_block == null) arena->first_block = next_block;
+            if (curr_block)                 curr_block->next   = next_block;
+        }
+
+        // Reset mark since we moved to a new block.
+        arena->mark.occupied = aligned_header_size;
+        arena->mark.block    = next_block;
     }
-    return ret;
-}
 
-static void *push_size_pad_nz(arena *arena, ix size, ix pad) {
-    arena_block *block = arena->current_block;
-    if (!fits_in_arena_block(block, size + pad)) {
-        block = next_arena_block(arena, size + pad);
-    }
-
-    void *ret = null;
-    if (fits_in_arena_block(block, size + pad)) {
-        ret = (u8 *)block + block->occupied;
-        block->occupied += size;
-    }
+    // Push size.
+    assert(arena->mark.occupied + size <= arena->mark.block->capacity);
+    void *ret = (u8 *)arena->mark.block + arena->mark.occupied;
+    arena->mark.occupied += size;
 
     return ret;
 }
 
-static void *push_padded_size(arena *arena, ix size, ix pad) {
-    void *ret = push_size_pad_nz(arena, size, pad);
-    if (ret) {
-        memset(ret, 0, size);
-    }
-    return ret;
+static void *arena_copy_size(arena *arena, void *src, u64 size, u64 align) {
+    void *dst = arena_push_size(arena, size, align);
+    memcpy(dst, src, size);
+    return dst;
 }
 
-static void *push_size_nz(arena *arena, ix size) {
-    void *ret = push_size_pad_nz(arena, size, 0);
-    return ret;
-}
-
-static void *push_size(arena *arena, ix size) {
-    void *ret = push_padded_size(arena, size, 0);
-    return ret;
-}
-
-static u8 *arena_top(arena *arena) {
-    u8 *ret = (u8 *)push_size(arena, 0);
-    return ret;
-}
-
-static str copy_str_null_terminate(arena *arena, str s) {
+static str arena_copy_str(arena *arena, str s) {
     str ret = { 0 };
-    ret.v   = (u8 *)push_size_nz(arena, s.len + 1);
+    ret.v = (u8 *)arena_push_size_nz(arena, s.len + 1, 0);
+    ret.len = s.len;
 
-    if (ret.v) {
-        memcpy(ret.v, s.v, s.len);
-        ret.len = s.len;
-        ret.v[ret.len] = '\0';
-    }
+    memcpy(ret.v, s.v, s.len);
+    ret.v[ret.len] = '\0';
 
     return ret;
 }
 
-static span_void push_span_(arena *arena, ix count, ix elemsize) {
-    span_void ret = { 0 };
-    ret.v = push_size(arena, count * elemsize);
-    ret.count = ret.v ? count : 0;
-    return ret;
+static arena_snapshot arena_take_snapshot(arena *arena) {
+    return arena->mark;
 }
 
-static span_void push_span_nz_(arena *arena, ix count, ix elemsize) {
-    span_void ret = { 0 };
-    ret.v = push_size_nz(arena, count * elemsize);
-    ret.count = ret.v ? count : 0;
-    return ret;
+static void arena_restore_snapshot(arena *arena, arena_snapshot snapshot) {
+    arena->mark = snapshot;
 }
 
-static span_void copy_span_(arena *arena, span_void src, ix elemsize) {
-    span_void ret = push_span_(arena, src.count, elemsize);
-    if (ret.v) {
-        memcpy(ret.v, src.v, src.count * elemsize);
-        ret.count = src.count;
-    }
-
-    return ret;
-}
-
-#ifndef __cplusplus
-static str copy_str(arena *arena, str s) {
-    return copy_span(arena, u8, s);
-}
-#endif
-
-static bool arena_begin_temp(arena *arena) {
-    bool ret = false;
-    arena->temp_depth++;
-
-    arena_temp *temp = push_struct_nz(arena, arena_temp);
-    if (temp) {
-        slist_stack_push(arena->temp_head, temp);
-        temp->block = arena->current_block;
-        temp->depth = arena->temp_depth;
-        ret = true;
-    }
-
-    return ret;
-}
-
-static span_u8 arena_block_content(arena_block *block) {
-    span_u8 ret = { 0 };
-    ret.v       = (u8 *)block     + sizeof(arena_block);
-    ret.count   = block->occupied - sizeof(arena_block);
-    return ret;
-}
-
-static bool arena_ptr_inside_block(arena_block *block, void *ptr) {
-    span_u8 content = arena_block_content(block);
-    bool ret = (u8 *)ptr >= content.v && (u8 *)ptr < content.v + content.count;
-    return ret;
+static void arena_begin_temp(arena *arena) {
+    arena_snapshot snapshot = arena_take_snapshot(arena);
+    arena_temp *temp = arena_push_struct_nz(arena, arena_temp);
+    temp->snapshot = snapshot;
+    slist_stack_push(&arena->temp_head, temp);
 }
 
 static void arena_end_temp(arena *arena) {
-    assert(arena->temp_depth > 0 && "Arena temp stack underflow.");
-
-    arena_temp *temp = arena->temp_head;
-    if (temp) {
-        assert(temp->depth <= arena->temp_depth);
-        if (temp->depth == arena->temp_depth) {
-            slist_stack_pop(arena->temp_head);
-
-            arena_block *block = temp->block;
-            assert(arena_ptr_inside_block(block, temp));
-            block->occupied = ix(temp) - ix(block);
-            arena->current_block = block;
-        }
-    }
-
-    arena->temp_depth--;
+    assert(arena->temp_head && "Arena temp stack underflow.");
+    arena_snapshot snapshot = arena->temp_head->snapshot;
+    slist_stack_pop(&arena->temp_head);
+    arena_restore_snapshot(arena, snapshot);
 }
 
 ////////////////////////////////////////////////////////////////
@@ -282,41 +190,41 @@ static void arena_end_temp(arena *arena) {
 //
 ////////////////////////////////////////////////////////////////
 
-static bool array_create_(array *array, ix elemsize, ix initial_capacity, bool init_to_zero) {
+static bool darray_create_(array *array, u64 elem_size, u64 initial_cap, bool init_to_zero) {
     assert(array);
-    assert(initial_capacity);
-    assert(elemsize);
+    assert(initial_cap);
+    assert(elem_size);
 
     // TODO(rune): Error handling
-    array->v        = heap_alloc(initial_capacity * elemsize, init_to_zero);
-    array->cap      = initial_capacity;
+    array->v        = heap_alloc(initial_cap * elem_size, init_to_zero);
+    array->cap      = initial_cap;
     array->count    = 0;
     return true;
 }
 
-static void array_destroy_(array *array) {
+static void darray_destroy_(array *array) {
     if (array) {
         heap_free(array->v);
         zero(array);
     }
 }
 
-static bool array_reserve_(array *array, ix elemsize, ix num, bool init_to_zero) {
+static bool darray_reserve_(array *array, u64 elem_size, u64 reserve_count, bool init_to_zero) {
     bool ret = false;
 
-    if (array->cap < num) {
-        ix new_cap = 0;
+    if (array->cap < reserve_count) {
+        u64 new_cap = 0;
         void *new_elems;
         if (array->v == null) {
-            new_cap = num;
-            new_elems = heap_alloc(new_cap * elemsize, init_to_zero);
+            new_cap = reserve_count;
+            new_elems = heap_alloc(new_cap * elem_size, init_to_zero);
         } else {
             new_cap = array->cap;
-            while (new_cap < num) {
+            while (new_cap < reserve_count) {
                 new_cap *= 2;
             }
 
-            new_elems = heap_realloc(array->v, new_cap * elemsize, init_to_zero);
+            new_elems = heap_realloc(array->v, new_cap * elem_size, init_to_zero);
         }
         if (new_elems) {
             array->v   = new_elems;
@@ -331,73 +239,73 @@ static bool array_reserve_(array *array, ix elemsize, ix num, bool init_to_zero)
     return ret;
 }
 
-static void *array_add_(array *array, ix elemsize, ix count, bool init_to_zero) {
+static void *darray_add_(array *array, u64 elem_size, u64 add_count, bool init_to_zero) {
     void *ret = null;
 
-    if (array_reserve_(array, elemsize, array->count + count, init_to_zero)) {
-        ret = (u8 *)array->v + array->count * elemsize;
-        array->count += count;
+    if (darray_reserve_(array, elem_size, array->count + add_count, init_to_zero)) {
+        ret = (u8 *)array->v + array->count * elem_size;
+        array->count += add_count;
     }
 
     return ret;
 }
 
-static void *array_pop_(array *array, ix elemsize, ix count) {
+static void *darray_pop_(array *array, u64 elem_size, u64 pop_count) {
     void *ret = null;
 
-    if (array->count >= count) {
-        array->count  -= count;
-        ret = (u8 *)array->v + array->count * elemsize;
+    if (array->count >= pop_count) {
+        array->count  -= pop_count;
+        ret = (u8 *)array->v + array->count * elem_size;
     }
 
     return ret;
 }
 
-static bool array_remove_(array *array, ix elemsize, ix idx, ix count) {
-    assert(count > 0);
+static bool darray_remove_(array *array, u64 elem_size, u64 idx, u64 remove_count) {
+    assert(remove_count > 0);
 
     bool ret = false;
 
-    if (array->count >= idx + count) {
-        memmove((u8 *)array->v + elemsize * idx,
-                (u8 *)array->v + elemsize * (idx + count),
-                elemsize * (array->count - idx - count));
+    if (array->count >= idx + remove_count) {
+        memmove((u8 *)array->v + elem_size * idx,
+                (u8 *)array->v + elem_size * (idx + remove_count),
+                elem_size * (array->count - idx - remove_count));
 
-        array->count -= count;
+        array->count -= remove_count;
         ret = true;
     }
 
     return ret;
 }
 
-static void *array_insert_(array *array, ix elemsize, ix idx, ix count) {
-    assert(count > 0);
+static void *darray_insert_(array *array, u64 elem_size, u64 idx, u64 insert_count) {
+    assert(insert_count > 0);
 
     void *ret = null;
 
-    if (array_reserve_(array, elemsize, array->count + count, false)) {
-        memmove((u8 *)array->v + elemsize * (idx + count),
-                (u8 *)array->v + elemsize * idx,
-                (array->count - idx) * elemsize);
+    if (darray_reserve_(array, elem_size, array->count + insert_count, false)) {
+        memmove((u8 *)array->v + elem_size * (idx + insert_count),
+                (u8 *)array->v + elem_size * idx,
+                (array->count - idx) * elem_size);
 
-        array->count += count;
+        array->count += insert_count;
 
-        ret = (u8 *)array->v + elemsize * idx;
+        ret = (u8 *)array->v + elem_size * idx;
     }
 
     return ret;
 }
 
 
-static void *array_push_(array *array, ix elemsize, bool init_to_zero) {
-    void *ret = array_add_(array, elemsize, 1, init_to_zero);
+static void *array_push_(array *array, u64 elem_size, bool init_to_zero) {
+    void *ret = darray_add_(array, elem_size, 1, init_to_zero);
     return ret;
 }
 
-static void array_reset_(array *array, ix elemsize, bool clear_to_zero) {
+static void darray_reset_(array *array, u64 elem_size, bool clear_to_zero) {
     array->count = 0;
 
     if (clear_to_zero) {
-        memset(array->v, 0, array->cap * elemsize);
+        memset(array->v, 0, array->cap * elem_size);
     }
 }

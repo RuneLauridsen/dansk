@@ -140,32 +140,28 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="base\base.h" />
+    <ClInclude Include="base\base_ansiconsole.h" />
+    <ClInclude Include="base\base_buf.h" />
+    <ClInclude Include="base\base_builder.h" />
+    <ClInclude Include="base\base_core.h" />
+    <ClInclude Include="base\base_fmt.h" />
     <ClInclude Include="base\base_print.h" />
     <ClInclude Include="base\base_print.c" />
-    <ClInclude Include="base\base_types.h" />
     <ClInclude Include="base\base_buffer.c" />
     <ClInclude Include="base\base_map.c" />
     <ClInclude Include="base\base_memory.c" />
     <ClInclude Include="base\base_os.c" />
     <ClInclude Include="base\base_string.c" />
     <ClInclude Include="base\base_unicode.c" />
-    <ClInclude Include="base\ansiconsole.h" />
     <ClInclude Include="base\base_buffer.h" />
     <ClInclude Include="base\base_map.h" />
     <ClInclude Include="base\base_memory.h" />
     <ClInclude Include="base\base_os.h" />
     <ClInclude Include="base\base_string.h" />
     <ClInclude Include="base\base_unicode.h" />
-    <ClInclude Include="dansk.c" />
-    <ClInclude Include="dansk.h" />
-    <ClInclude Include="dansk_ast.c" />
-    <ClInclude Include="dansk_ast.h" />
-    <ClInclude Include="dansk_interp.c" />
-    <ClInclude Include="dansk_interp.h" />
-    <ClInclude Include="dansk_tokenizer.c" />
-    <ClInclude Include="dansk_tokenizer.h" />
-    <ClInclude Include="dansk_parser.c" />
-    <ClInclude Include="dansk_parser.h" />
+    <ClInclude Include="base\base_buf.c" />
+    <ClInclude Include="base\base_builder.c" />
+    <ClInclude Include="base\base_fmt.c" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.c" />

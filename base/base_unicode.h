@@ -35,8 +35,8 @@ static bool is_well_formed_utf16(wstr s);
 //
 ////////////////////////////////////////////////////////////////
 
-static void buffer_append_utf8_codepoint(buffer *buffer, u32 append);
-static void buffer_append_utf16_codepoint(buffer *buffer, u32 append);
+static void buf_append_utf8_codepoint(buf *buffer, u32 append);
+static void buf_append_utf16_codepoint(buf *buffer, u32 append);
 
 ////////////////////////////////////////////////////////////////
 //
@@ -46,7 +46,7 @@ static void buffer_append_utf16_codepoint(buffer *buffer, u32 append);
 //
 ////////////////////////////////////////////////////////////////
 
-// Conversion results are zero-terminated.
+// NOTE(rune): Conversion results are zero-terminated.
 static str convert_utf16_to_utf8(wstr w, arena *out);
 static wstr convert_utf8_to_utf16(str s, arena *out);
 
@@ -61,10 +61,10 @@ static wstr convert_utf8_to_utf16(str s, arena *out);
 typedef struct utf8_iter utf8_iter;
 struct utf8_iter {
     str s;
-    ix idx;
+    u64 idx;
     u32 codepoint;
     bool valid;
 };
 
-static utf8_iter utf8_iter_begin(str s, ix idx);
+static utf8_iter utf8_iter_begin(str s, u64 idx);
 static utf8_iter utf8_iter_next(utf8_iter iter, i32 dir);

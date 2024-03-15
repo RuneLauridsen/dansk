@@ -1,46 +1,10 @@
-
-Goddag.
+Offentlig Funktion MinFunktion()
+Goddag
     Lad A være et heltal.
-    Lad B være et heltal.
-    Lad C være en flyder.
-    Lad 🙃 være en påstand.
+    Lad B være en flyder.
 
-    Sæt A til 0.
-    Sæt B til 10.
-    Sæt C til 123,456.
-    Sæt 🙃 til sand.
-    
-    Lad ABC være et havelågekort.
-    Læg 12345 i ABC.
-    Nedtag 12345 fra ABC og gem i C.
-    Fjern 12345 fra ABC.
-    
-    Sæt C til find 12345 i ABC.
+    Sæt A til 10.
+    Sæt B til 15.
 
-    Hvis 🙃 er sand.
-    Goddag.
-        Lad E være et heltal.
-        Sæt E til 12345.
-        Udskriv_i_konsol E.
-    Farvel.
-
-    Sæt C til C plus 43,21.
-    Udskriv_i_konsol C.
-
-    Så_længe A er_mindre_end B.
-    Goddag.
-        Sæt A til A plus 1.
-        Udskriv_i_konsol A.
-    Farvel.
-
-    Hvis A er_lig_med B.
-    Goddag.
-        Udskriv_i_konsol 123.
-    Farvel.
-    Ellers.
-        Udskriv_i_konsol 321.
-
-    Sæt A til 1.
-    Sæt B til A plus 1432.
-    Udskriv_i_konsol B.
-Farvel.
+    Kald Print A Plus B.
+Farvel

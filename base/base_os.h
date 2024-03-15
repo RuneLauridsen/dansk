@@ -55,5 +55,5 @@ static bool os_is_path_seperator(u32 c);
 //
 ////////////////////////////////////////////////////////////////
 
-static u64 os_get_performance_timestamp();
-static f64 os_get_millis_between(u64 timestamp_a, u64 timestamp_b);
+static u64 os_get_performance_timestamp(void);
+static f64 os_get_millis_between(u64 t_begin, u64 t_end);

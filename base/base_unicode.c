@@ -6,6 +6,27 @@
 //
 ////////////////////////////////////////////////////////////////
 
+
+// NOTE(rune): Table generated with:
+#if 0
+#include <stdio.h>
+int main() {
+    printf("static const u8 decode_table[256] =\n{");
+
+    for (int i = 0; i < 256; i++) {
+        if (i % 32 == 0) printf("\n    ");
+
+        if ((i >> 3) == 0b11110)      printf("4, "); // 11110xxx
+        else if ((i >> 4) == 0b1110)  printf("3, "); // 1110xxxx
+        else if ((i >> 5) == 0b110)   printf("2, "); // 111xxxxx
+        else if ((i >> 7) == 0)       printf("1, "); // 0xxxxxxx
+        else                         printf("0, "); // continuation
+    }
+
+    printf("\n};\n");
+}
+#endif
+
 static readonly u8 utf8_table[256] = {
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 0-1f
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 20-3f
@@ -33,6 +54,7 @@ static i32 get_utf8_class_u32(u32 cp) {
 }
 
 static i32 get_utf16_class_u32(u32 codepoint) {
+    unused(codepoint);
     return 1; // @Implement
 }
 
@@ -44,80 +66,41 @@ static bool is_utf8_continuation_byte(u8 codeunit) {
 static unicode_codepoint decode_single_utf8_codepoint(str s) {
     // https://en.wikipedia.org/wiki/UTF-8#Encoding
 
-    //
-    // NOTE(rune): Table generated with:
-    //
-#if 0
-#include <stdio.h>
-    int main() {
-        printf("static const u8 decode_table[256] =\n{");
-
-        for (int i = 0; i < 256; i++) {
-            if (i % 32 == 0) printf("\n    ");
-
-            if ((i >> 3) == 0b11110)      printf("4, "); // 11110xxx
-            else if ((i >> 4) == 0b1110)  printf("3, "); // 1110xxxx
-            else if ((i >> 5) == 0b110)   printf("2, "); // 111xxxxx
-            else if ((i >> 7) == 0)       printf("1, "); // 0xxxxxxx
-            else                         printf("0, "); // continuation
-        }
-
-        printf("\n};\n");
-    }
-#endif
-
     unicode_codepoint ret = { 0 };
+    switch (get_utf8_class_u8(s.v[0])) {
+        case 1: {
+            if (s.len >= 1) {
+                ret.len = 1;
+                ret.codepoint = s.v[0];
+            }
+        } break;
 
-    //
-    // (rune): 1-byte encoding
-    //
+        case 2: {
+            if (s.len >= 2) {
+                ret.len = 2;
+                ret.codepoint = (((s.v[0] & 0b0001'1111) << 6) |
+                                 ((s.v[1] & 0b0011'1111) << 0));
+            }
+        } break;
 
-    if ((s.count >= 1) &&
-        (utf8_table[s.v[0]] == 1)) {
-        ret.len = 1;
-        ret.codepoint = s.v[0];
-    }
+        case 3: {
+            if (s.len >= 3) {
+                ret.len = 3;
+                ret.codepoint = (((s.v[0] & 0b0000'1111) << 12) |
+                                 ((s.v[1] & 0b0011'1111) <<  6) |
+                                 ((s.v[2] & 0b0011'1111) <<  0));
+            }
+        } break;
 
-    //
-    // (rune): 2-byte encoding
-    //
-
-    if ((s.count >= 2) &&
-        (utf8_table[s.v[0]] == 2) &&
-        (utf8_table[s.v[1]] == 0)) {
-        ret.len = 2;
-        ret.codepoint = (((s.v[0] & 0b0001'1111) << 6) |
-                         ((s.v[1] & 0b0011'1111) << 0));
-    }
-
-    //
-    // (rune): 3-byte encoding
-    //
-
-    if ((s.count >= 3) &&
-        (utf8_table[s.v[0]] == 3) &&
-        (utf8_table[s.v[1]] == 0) &&
-        (utf8_table[s.v[2]] == 0)) {
-        ret.len = 3;
-        ret.codepoint = (((s.v[0] & 0b0000'1111) << 12) |
-                         ((s.v[1] & 0b0011'1111) <<  6) |
-                         ((s.v[2] & 0b0011'1111) <<  0));
-    }
-
-    //
-    // (rune): 4-byte encoding
-    //
-
-    if ((s.count >= 4) &&
-        (utf8_table[s.v[0]] == 4) &&
-        (utf8_table[s.v[1]] == 0) &&
-        (utf8_table[s.v[2]] == 0) &&
-        (utf8_table[s.v[3]] == 0)) {
-        ret.len = 4;
-        ret.codepoint = (((s.v[0] & 0b0000'0111) << 18) |
-                         ((s.v[1] & 0b0011'1111) << 12) |
-                         ((s.v[2] & 0b0011'1111) <<  6) |
-                         ((s.v[3] & 0b0011'1111) <<  0));
+        case 4: {
+            if (s.len >= 4) {
+                ret.len = 4;
+                ret.codepoint = (((s.v[0] & 0b0000'0111) << 18) |
+                                 ((s.v[1] & 0b0011'1111) << 12) |
+                                 ((s.v[2] & 0b0011'1111) <<  6) |
+                                 ((s.v[3] & 0b0011'1111) <<  0));
+            }
+        }
     }
 
     return ret;
@@ -162,7 +145,7 @@ static i32 encode_single_utf8_codepoint(u32 c, u8 *out) {
 
 static i32 encode_single_utf16_codepoint(u32 codepoint, u16 *out) {
     // @Implement
-    out[0] = u16(codepoint);
+    out[0] = cast_u16(codepoint);
     return 1;
 }
 
@@ -180,7 +163,7 @@ static bool advance_single_utf8_codepoint(str *s, unicode_codepoint *decoded) {
 }
 
 static unicode_codepoint decode_single_utf16_codepoint(wstr w) {
-    // TODO(rune): Better utf16 decoder.
+    // TODO(rune): @Todo Actual utf16 decoder.
 
     unicode_codepoint ret = { 0 };
 
@@ -212,34 +195,34 @@ static bool advance_single_utf16_codepoint(wstr *w, unicode_codepoint *decoded) 
 ////////////////////////////////////////////////////////////////
 
 static str convert_utf16_to_utf8(wstr w, arena *out) {
-    ix max_len_as_utf8 = (w.count + 1) * 3;
-    buffer buffer = push_buffer(out, max_len_as_utf8);
+    u64 max_len_as_utf8 = (w.count + 1) * 3;
+    buf buf = arena_push_buf(out, max_len_as_utf8);
     unicode_codepoint decoded = { 0 };
     while (advance_single_utf16_codepoint(&w, &decoded)) {
-        buffer_append_utf8_codepoint(&buffer, decoded.codepoint);
+        buf_append_utf8_codepoint(&buf, decoded.codepoint);
     }
 
-    buffer_null_terminate_u8(&buffer);
-    str ret = buffer_as_str(buffer);
+    buf_null_terminate_u8(&buf);
+    str ret = buf_as_str(buf);
     return ret;
 }
 
 static wstr convert_utf8_to_utf16(str s, arena *out) {
-    ux max_len_as_utf16 = (s.count + 1) * 2;
-    buffer buffer = push_buffer(out, max_len_as_utf16);
+    u64 max_len_as_utf16 = (s.count + 1) * 2;
+    buf buf = arena_push_buf(out, max_len_as_utf16);
 
     unicode_codepoint decoded = { 0 };
     while (advance_single_utf8_codepoint(&s, &decoded)) {
-        buffer_append_utf16_codepoint(&buffer, decoded.codepoint);
+        buf_append_utf16_codepoint(&buf, decoded.codepoint);
     }
 
-    buffer_null_terminate_u16(&buffer);
-    wstr ret = buffer_as_wstr(buffer);
+    buf_null_terminate_u16(&buf);
+    wstr ret = buf_as_wstr(buf);
     return ret;
 }
 
 static bool is_well_formed_utf8(str s) {
-    ix i = 0;
+    u64 i = 0;
     str remaining = s;
     unicode_codepoint decoded = { 0 };
     while (advance_single_utf8_codepoint(&remaining, &decoded)) {
@@ -258,19 +241,19 @@ static bool is_well_formed_utf8(str s) {
 //
 ////////////////////////////////////////////////////////////////
 
-static void buffer_append_utf8_codepoint(buffer *buffer, u32 append) {
+static void buf_append_utf8_codepoint(buf *buf, u32 append) {
     i32 num_units = get_utf8_class_u32(append);
-    if (buffer->count + num_units <= buffer->cap) {
-        encode_single_utf8_codepoint(append, buffer->v + buffer->count);
-        buffer->count += num_units;
+    if (buf->count + num_units <= buf->cap) {
+        encode_single_utf8_codepoint(append, buf->v + buf->count);
+        buf->count += num_units;
     }
 }
 
-static void buffer_append_utf16_codepoint(buffer *buffer, u32 append) {
+static void buf_append_utf16_codepoint(buf *buf, u32 append) {
     i32 num_units = get_utf16_class_u32(append);
-    if (buffer->count + num_units * 2 <= buffer->cap) {
-        encode_single_utf16_codepoint(append, (u16 *)(buffer->v + buffer->count));
-        buffer->count += num_units * 2;
+    if (buf->count + num_units * 2 <= buf->cap) {
+        encode_single_utf16_codepoint(append, (u16 *)(buf->v + buf->count));
+        buf->count += num_units * 2;
     }
 }
 
@@ -282,17 +265,17 @@ static void buffer_append_utf16_codepoint(buffer *buffer, u32 append) {
 //
 ////////////////////////////////////////////////////////////////
 
-static utf8_iter utf8_iter_begin(str s, ix idx) {
+static utf8_iter utf8_iter_begin(str s, u64 idx) {
     utf8_iter ret = { 0 };
     ret.s = s;
     ret.idx = idx;
     unicode_codepoint decoded = decode_single_utf8_codepoint(substr_idx(s, idx));
     ret.codepoint = decoded.codepoint;
-    ret.valid = idx >= 0 && idx <= s.count - 1;
+    ret.valid = idx < s.count;
     return ret;
 }
 
-// TODO(rune): Simplify.
+// TODO(rune): @Simplify.
 static utf8_iter utf8_iter_next(utf8_iter iter, i32 dir) {
     iter.valid = false;
     switch (dir) {
