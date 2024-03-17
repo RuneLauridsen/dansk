@@ -119,25 +119,25 @@ typedef double      f64;
 #define full_switch_end   _Pragma("warning ( pop )")
 
 #define cast(T, a)      ((T)(a))
-#define cast_i8(a)      ((i8)(a))
-#define cast_i16(a)     ((i16)(a))
-#define cast_i32(a)     ((i32)(a))
-#define cast_i64(a)     ((i64)(a))
-#define cast_u8(a)      ((u8)(a))
-#define cast_u16(a)     ((u16)(a))
-#define cast_u32(a)     ((u32)(a))
-#define cast_u64(a)     ((u64)(a))
-#define cast_b8(a)      ((b8)(a))
-#define cast_b16(a)     ((b16)(a))
-#define cast_b32(a)     ((b32)(a))
-#define cast_b64(a)     ((b64)(a))
-#define cast_f32(a)     ((f32)(a))
-#define cast_f64(a)     ((f64)(a))
+#define i8(a)      ((i8)(a))
+#define i16(a)     ((i16)(a))
+#define i32(a)     ((i32)(a))
+#define i64(a)     ((i64)(a))
+#define u8(a)      ((u8)(a))
+#define u16(a)     ((u16)(a))
+#define u32(a)     ((u32)(a))
+#define u64(a)     ((u64)(a))
+#define b8(a)      ((b8)(a))
+#define b16(a)     ((b16)(a))
+#define b32(a)     ((b32)(a))
+#define b64(a)     ((b64)(a))
+#define f32(a)     ((f32)(a))
+#define f64(a)     ((f64)(a))
 
-#define PACK_U8X8(u0, u1, u2, u3)  ((cast_u32(u0) <<  0) | \
-                                    (cast_u32(u1) <<  8) | \
-                                    (cast_u32(u2) << 16) | \
-                                    (cast_u32(u3) << 24))
+#define PACK_U8X8(u0, u1, u2, u3)  ((u32(u0) <<  0) | \
+                                    (u32(u1) <<  8) | \
+                                    (u32(u2) << 16) | \
+                                    (u32(u3) << 24))
 
 #define rgba(r,g,b,a)   (PACK_U8X8(r, g, b, a))
 #define rgb(r,g,b)      (PACK_U8X8(r, g, b, 255))
@@ -153,7 +153,7 @@ typedef double      f64;
 
 #define stringify_(a) #a
 #define stringify(a) stringify_(a)
-#define loc() (__FILE__ ":" stringify(__LINE__))
+#define loc() (str(__FILE__ ":" stringify(__LINE__)))
 
 #define for_range(T, it, start, end)        for(T it = start; it < end; it++)
 #define for_n(T, it, end)                   for(T it = 0; it < end; it++)
@@ -297,7 +297,7 @@ static inline span wstr_as_span(wstr w) { return make_span(u8, (u8 *)w.v, w.coun
 
 #define span_literal(T, ...)          (make_span(T, ((T[]) { __VA_ARGS__ }), NUM_ARGUMENTS(__VA_ARGS__)))
 
-// NOTE(rune): Need at seperate macro for compile-time constant strings, because C is dumb.
+// NOTE(rune): Need a seperate macro for compile-time constant strings, because C is dumb.
 #define STR(text)                      { .v = (u8 *)(text), .len = lengthof(text)}
 #define str(text)                      make_span(u8, (u8 *)(text), lengthof(text))
 #define spanof_array(T, array)         make_span(T, array, countof(array))
@@ -1213,44 +1213,44 @@ static inline f32 f32_smooth_damp_assign(f32 *current, f32 target, f32 *velocity
 ////////////////////////////////////////////////////////////////
 
 static inline u32 pack_u8x4(u8 u0, u8 u1, u8 u2, u8 u3) {
-    return ((cast_u32(u0) <<  0) |
-            (cast_u32(u1) <<  8) |
-            (cast_u32(u2) << 16) |
-            (cast_u32(u3) << 24));
+    return ((u32(u0) <<  0) |
+            (u32(u1) <<  8) |
+            (u32(u2) << 16) |
+            (u32(u3) << 24));
 }
 
 static inline void unpack_u8x4(u32 u, u8 *u0, u8 *u1, u8 *u2, u8 *u3) {
-    *u0 = cast_u8(u >>  0);
-    *u1 = cast_u8(u >>  8);
-    *u2 = cast_u8(u >> 16);
-    *u3 = cast_u8(u >> 24);
+    *u0 = u8(u >>  0);
+    *u1 = u8(u >>  8);
+    *u2 = u8(u >> 16);
+    *u3 = u8(u >> 24);
 }
 
 static inline u32 pack_u16x2(u16 u0, u16 u1) {
-    return ((cast_u32(u0) <<   0) |
-            (cast_u32(u1) <<  16));
+    return ((u32(u0) <<   0) |
+            (u32(u1) <<  16));
 }
 
 static inline void unpack_u16x2(u32 u, u16 *u0, u16 *u1) {
-    *u0 = cast_u16(u >>  0);
-    *u1 = cast_u16(u >> 16);
+    *u0 = u16(u >>  0);
+    *u1 = u16(u >> 16);
 }
 
 static inline u64 pack_u32x2(u32 a, u32 b) {
-    return ((cast_u64(a) <<  0) |
-            (cast_u64(b) << 32));
+    return ((u64(a) <<  0) |
+            (u64(b) << 32));
 }
 
 static inline void unpack_u32x2(u64 u, u32 *u0, u32 *u1) {
-    *u0 = cast_u32(u >>  0);
-    *u1 = cast_u32(u >> 32);
+    *u0 = u32(u >>  0);
+    *u1 = u32(u >> 32);
 }
 
 static inline u32 pack_rgba(vec4 v) {
-    u8 r = cast_u8(v.r * 255.0f);
-    u8 g = cast_u8(v.g * 255.0f);
-    u8 b = cast_u8(v.b * 255.0f);
-    u8 a = cast_u8(v.a * 255.0f);
+    u8 r = u8(v.r * 255.0f);
+    u8 g = u8(v.g * 255.0f);
+    u8 b = u8(v.b * 255.0f);
+    u8 a = u8(v.a * 255.0f);
 
     u32 u = pack_u8x4(r, g, b, a);
     return u;
@@ -1260,10 +1260,10 @@ static inline vec4 unpack_rgba(u32 u) {
     u8 r, g, b, a;
     unpack_u8x4(u, &r, &g, &b, &a);
     vec4 ret = { 0 };
-    ret.r = cast_f32(r) / 255.0f;
-    ret.g = cast_f32(g) / 255.0f;
-    ret.b = cast_f32(b) / 255.0f;
-    ret.a = cast_f32(a) / 255.0f;
+    ret.r = f32(r) / 255.0f;
+    ret.g = f32(g) / 255.0f;
+    ret.b = f32(b) / 255.0f;
+    ret.a = f32(a) / 255.0f;
     return ret;
 }
 
@@ -1373,6 +1373,7 @@ static inline void *ptr_round_up(void *ptr, u64 multiple) {
 ////////////////////////////////////////////////////////////////
 
 typedef enum any_tag {
+    ANY_TAG_NONE,
     ANY_TAG_I8,
     ANY_TAG_I16,
     ANY_TAG_I32,
@@ -1433,7 +1434,7 @@ struct any {
         u64_range _range_u64;
         f32_range _range_f32;
         f64_range _range_f64;
-        void *_void_ptr;
+        void *_ptr;
     };
 };
 
@@ -1503,10 +1504,47 @@ static inline any make_any_range_u64(u64_range a) { return lit(any) { .tag = ANY
 static inline any make_any_range_f32(f32_range a) { return lit(any) { .tag = ANY_TAG_RANGE_F32, ._range_f32 = a }; }
 static inline any make_any_range_f64(f64_range a) { return lit(any) { .tag = ANY_TAG_RANGE_F64, ._range_f64 = a }; }
 static inline any make_any_cstr(char *a) { return lit(any) { .tag = ANY_TAG_STR, ._str.v = (u8 *)a, ._str.len = strlen(a) }; }
-static inline any make_any_ptr(void *a) { return lit(any) { .tag = ANY_TAG_PTR, ._void_ptr = a }; }
+static inline any make_any_ptr(void *a) { return lit(any) { .tag = ANY_TAG_PTR, ._ptr = a }; }
 static inline any make_any_self(any a) { return a; }
 
 #endif
+
+static bool any_eq(any a, any b) {
+    if (a.tag != b.tag) {
+        return false;
+    }
+
+    switch (a.tag) {
+        case ANY_TAG_I8:         return a._i8 == b._i8;
+        case ANY_TAG_I16:        return a._i16 == b._i16;
+        case ANY_TAG_I32:        return a._i32 == b._i32;
+        case ANY_TAG_I64:        return a._i64 == b._i64;
+        case ANY_TAG_U8:         return a._u8 == b._u8;
+        case ANY_TAG_U16:        return a._u16 == b._u16;
+        case ANY_TAG_U32:        return a._u32 == b._u32;
+        case ANY_TAG_U64:        return a._u64 == b._u64;
+        case ANY_TAG_F32:        return a._f32 == b._f32;
+        case ANY_TAG_F64:        return a._f64 == b._f64;
+        case ANY_TAG_BOOL:       return a._bool == b._bool;
+        case ANY_TAG_STR:        return (a._str.len == b._str.len) && (memcmp(a._str.v, b._str.v, a._str.len) == 0);
+        case ANY_TAG_VEC2:       return vec2_eq(a._vec2, b._vec2);
+        case ANY_TAG_VEC3:       return vec3_eq(a._vec3, b._vec3);
+        case ANY_TAG_VEC4:       return vec4_eq(a._vec4, b._vec4);
+        case ANY_TAG_RECT:       return rect_eq(a._rect, b._rect);
+        case ANY_TAG_RANGE_I8:   return a._range_i8.min == b._range_i8.min && a._range_i8.max == b._range_i8.max;
+        case ANY_TAG_RANGE_I16:  return a._range_i16.min == b._range_i16.min && a._range_i16.max == b._range_i16.max;
+        case ANY_TAG_RANGE_I32:  return a._range_i32.min == b._range_i32.min && a._range_i32.max == b._range_i32.max;
+        case ANY_TAG_RANGE_I64:  return a._range_i64.min == b._range_i64.min && a._range_i64.max == b._range_i64.max;
+        case ANY_TAG_RANGE_U8:   return a._range_u8.min == b._range_u8.min && a._range_u8.max == b._range_u8.max;
+        case ANY_TAG_RANGE_U16:  return a._range_u16.min == b._range_u16.min && a._range_u16.max == b._range_u16.max;
+        case ANY_TAG_RANGE_U32:  return a._range_u32.min == b._range_u32.min && a._range_u32.max == b._range_u32.max;
+        case ANY_TAG_RANGE_U64:  return a._range_u64.min == b._range_u64.min && a._range_u64.max == b._range_u64.max;
+        case ANY_TAG_RANGE_F32:  return a._range_f32.min == b._range_f32.min && a._range_f32.max == b._range_f32.max;
+        case ANY_TAG_RANGE_F64:  return a._range_f64.min == b._range_f64.min && a._range_f64.max == b._range_f64.max;
+        case ANY_TAG_PTR:        return a._ptr == b._ptr;
+        default:                 return false;
+    }
+}
 
 ////////////////////////////////////////////////////////////////
 //

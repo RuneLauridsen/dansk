@@ -215,7 +215,7 @@ static f64 os_get_millis_between(u64 t_begin, u64 t_end) {
     u64 diff = t_end - t_begin;
     u64 freq = 1;
     QueryPerformanceFrequency(cast(LARGE_INTEGER *, &freq));
-    f64 ret = 1000.0 * cast_f64(diff) / cast_f64(freq);
+    f64 ret = 1000.0 * f64(diff) / f64(freq);
     return ret;
 }
 

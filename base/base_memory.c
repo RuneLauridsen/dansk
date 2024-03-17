@@ -32,7 +32,13 @@ static void *heap_alloc(u64 size, bool init_to_zero) {
 }
 
 static void *heap_realloc(void *p, u64 size, bool init_to_zero) {
-    void *ret = HeapReAlloc(GetProcessHeap(), init_to_zero ? HEAP_ZERO_MEMORY : 0, p, size);
+    void *ret = null;
+    if (p == null) {
+        ret = heap_alloc(size, init_to_zero);
+    } else {
+        ret = HeapReAlloc(GetProcessHeap(), init_to_zero ? HEAP_ZERO_MEMORY : 0, p, size);
+    }
+
     assert(ret);
 #ifdef TRACK_ALLOCATIONS
     idk_track_realloc(IDK_LOCATION, p, ret, size);

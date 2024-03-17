@@ -178,7 +178,7 @@ int main(void) {
 
             if (classes[j].func(i)) {
                 if (num_classes == 0) {
-                    printf(" = %s", classes[j].name);
+                    printf(" = (u8)%s", classes[j].name);
                 } else {
                     printf("|%s", classes[j].name);
                 }
@@ -481,13 +481,13 @@ static char_flags u8_get_char_flags(u8 c) {
 //
 ////////////////////////////////////////////////////////////////
 
-static bool u32_is_ascii_letter(u32 c) { return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'); }
-static bool u32_is_ascii_digit(u32 c) { return (c >= '0' && c <= '9'); }
-static bool u32_is_ascii_upper(u32 c) { return (c >= 'A' && c <= 'Z'); }
-static bool u32_is_ascii_lower(u32 c) { return (c >= 'a' && c <= 'z'); }
-static bool u32_is_ascii_non_printable(u32 c) { return (c >= 0   && c <= 31); }
-static bool u32_is_ascii_printable(u32 c) { return (c >= 32  && c <= 127); }
-static bool u32_is_ascii_one_of(u32 c, str of) {
+static bool u32_is_letter(u32 c) { return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'); }
+static bool u32_is_digit(u32 c) { return (c >= '0' && c <= '9'); }
+static bool u32_is_upper(u32 c) { return (c >= 'A' && c <= 'Z'); }
+static bool u32_is_lower(u32 c) { return (c >= 'a' && c <= 'z'); }
+static bool u32_is_non_printable(u32 c) { return (c >= 0   && c <= 31); }
+static bool u32_is_printable(u32 c) { return (c >= 32  && c <= 127); }
+static bool u32_is_one_of(u32 c, str of) {
     bool ret = false;
     for_n (u64, i, of.count) {
         ret |= (c == of.v[i]);
@@ -495,10 +495,10 @@ static bool u32_is_ascii_one_of(u32 c, str of) {
     return ret;
 }
 
-static u32 u32_to_ascii_lower(u32 c) { return u32_is_ascii_upper(c) ? c + 32 : c; }
-static u32 u32_to_ascii_upper(u32 c) { return u32_is_ascii_lower(c) ? c - 32 : c; }
+static u32 u32_to_lower(u32 c) { return u32_is_upper(c) ? c + 32 : c; }
+static u32 u32_to_upper(u32 c) { return u32_is_lower(c) ? c - 32 : c; }
 
-static bool u32_is_ascii_whitespace(u32 c) {
+static bool u32_is_whitespace(u32 c) {
     bool ret = false;
 
     ret |= (c == ' ');
@@ -522,6 +522,7 @@ static u8 u8_to_lower(u8 c) {
 static bool u8_is_whitespace(u8 c) { return u8_get_char_flags(c) & CHAR_FLAG_WHITESPACE; }
 static bool u8_is_digit(u8 c) { return u8_get_char_flags(c) & CHAR_FLAG_DIGIT; }
 static bool u8_is_letter(u8 c) { return u8_get_char_flags(c) & CHAR_FLAG_LETTER; }
+static bool u8_is_punct(u8 c) { return u8_get_char_flags(c) & CHAR_FLAG_PUNCT; }
 
 ////////////////////////////////////////////////////////////////
 //
@@ -617,8 +618,8 @@ static u64_result str_idx_of_str(str a, str b) {
         ret.v = 0;
         ret.found = true;
     } else if (a.count >= b.count) {
-        char first = b.v[0];
-        char last  = b.v[b.count - 1];
+        u8 first = b.v[0];
+        u8 last  = b.v[b.count - 1];
 
         for (u64 i = 0; i <= a.count - b.count; i++) {
             if ((a.v[i] == first) && (a.v[i + b.count - 1] == last)) {
@@ -682,7 +683,7 @@ static u64_result str_idx_of_any(str s, str any) {
 
     for (u64 i = 0; i < s.count; i++) {
         u64 i_rev = s.count - i - 1;
-        if (u32_is_ascii_one_of(s.v[i_rev], any)) {
+        if (u32_is_one_of(s.v[i_rev], any)) {
             ret.v = i_rev;
             ret.found = true;
             break;
@@ -792,7 +793,7 @@ static str str_trim(str s) {
 }
 
 static str str_trim_left(str s) {
-    while (s.count && u32_is_ascii_whitespace(s.v[0])) {
+    while (s.count && u8_is_whitespace(s.v[0])) {
         s.v     += 1;
         s.count -= 1;
     }
@@ -801,7 +802,7 @@ static str str_trim_left(str s) {
 }
 
 static str str_trim_right(str s) {
-    while (s.count && u32_is_ascii_whitespace(s.v[s.count - 1])) {
+    while (s.count && u8_is_whitespace(s.v[s.count - 1])) {
         s.count--;
     }
 
@@ -866,37 +867,44 @@ static void str_sort_nocase(str *strings, u64 count) {
 //
 ////////////////////////////////////////////////////////////////
 
-static void str_list_push(str_list *list, str s, arena *arena) {
+static void str_list_push(str_list *list, arena *arena, str s) {
     str_node *node = arena_push_struct(arena, str_node);
     node->v = s;
     slist_add(list, node);
-    list->count++;
+    list->count     += 1;
+    list->total_len += s.len;
 }
 
-static str str_join(str_list src, str seperator, arena *arena) {
-    u64 len = 0;
-    for_list (str_node, node, src) {
-        str s = node->v;
-        len += s.len;
-        if (node != src.last) {
-            len += seperator.len;
+static void str_list_push_copy(str_list *list, arena *arena, str s) {
+    str copy = arena_copy_str(arena, s);
+    str_list_push(list, arena, s);
+}
+
+static void str_list_push_fmt_args(str_list *list, arena *arena, args args) {
+    str s = arena_push_fmt_args(arena, args);
+    str_list_push(list, arena, s);
+}
+
+static str str_list_join(str_list *list, arena *arena, str seperator) {
+    str ret = { 0 };
+    if (list->count > 0) {
+        u64 len = list->total_len + seperator.len * (list->count - 1);
+        u8 *dst = arena_push_size(arena, len + 1, 0);
+        u64 off = 0;
+        for_list (str_node, node, *list) {
+            str s = node->v;
+            memcpy(dst + off, s.v, s.len);
+            off += s.len;
+            if (node != list->last) {
+                memcpy(dst + off, seperator.v, seperator.len);
+                off += seperator.len;
+            }
         }
+
+        assert(off == len);
+        ret = make_str(dst, len);
     }
 
-    u8 *dst = arena_push_size(arena, len + 1, 0);
-    u64 off = 0;
-    for_list (str_node, node, src) {
-        str s = node->v;
-        memcpy(dst + off, s.v, s.len);
-        off += s.len;
-        if (node != src.last) {
-            memcpy(dst + off, seperator.v, seperator.len);
-            off += seperator.len;
-        }
-    }
-
-    assert(off == len);
-    str ret = make_str(dst, len);
     return ret;
 }
 
@@ -905,7 +913,18 @@ static str_list str_split_by_whitespace(str s, arena *arena) {
     while (s.len) {
         str part = str_chop_by_whitespace(&s);
         if (part.len) {
-            str_list_push(&ret, part, arena);
+            str_list_push(&ret, arena, part);
+        }
+    }
+    return ret;
+}
+
+static str_list str_split_by_delim(str s, str delim, arena *arena) {
+    str_list ret = { 0 };
+    while (s.len) {
+        str part = str_chop_by_delim(&s, delim);
+        if (part.len) {
+            str_list_push(&ret, arena, part);
         }
     }
     return ret;

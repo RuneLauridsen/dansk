@@ -162,15 +162,18 @@
     <ClInclude Include="base\base_buf.c" />
     <ClInclude Include="base\base_builder.c" />
     <ClInclude Include="base\base_fmt.c" />
+    <ClInclude Include="dk.c" />
+    <ClInclude Include="dk.h" />
+    <ClInclude Include="dk_tests.c" />
+    <ClInclude Include="dk_tests.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.c" />
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="eksempel.dk" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="cpp.hint" />
+    <None Include="tests\basic.dk.test" />
+    <None Include="tests\tests.dk" />
+    <None Include="tests\test_typecheck.dk" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

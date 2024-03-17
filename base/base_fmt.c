@@ -72,7 +72,7 @@ static void fmt_append_character(buf *buf, fmt_spec spec, u32 c) {
         char *esc_seq = fmt_get_esc_seq(c);
         if (esc_seq) {
             fmt_append_printf(buf, spec, "%s", esc_seq);
-        } else if (u32_is_ascii_printable(c)) {
+        } else if (u32_is_printable(c)) {
             fmt_append_printf(buf, spec, "%c", c);
         } else if (c <= 0xff) {
             fmt_append_printf(buf, spec, "'\\x%02x'", c);
@@ -108,7 +108,7 @@ static void fmt_append_usigned(buf *buf, fmt_spec spec, u64 v, i32 num_bits) {
         else if (v < 1024 * 1024)   fmt_append_printf(buf, spec, "%llu KB", v / 1024);
         else                        fmt_append_printf(buf, spec, "%llu MB", v / (1024 * 1024));
     } else if (spec.character) {
-        fmt_append_character(buf, spec, cast_u32(v));
+        fmt_append_character(buf, spec, u32(v));
     } else if (spec.hex) {
         fmt_append_hex(buf, spec, v);
     } else if (spec.hexpad) {
@@ -120,25 +120,25 @@ static void fmt_append_usigned(buf *buf, fmt_spec spec, u64 v, i32 num_bits) {
 
 static void fmt_append_signed(buf *buf, fmt_spec spec, i64 v, i32 num_bits) {
     if (spec.character) {
-        fmt_append_character(buf, spec, cast_u32(v));
+        fmt_append_character(buf, spec, u32(v));
     } else if (spec.hex) {
-        fmt_append_hex(buf, spec, cast_u64(v));
+        fmt_append_hex(buf, spec, u64(v));
     } else if (spec.hexpad) {
-        fmt_append_hexpad(buf, spec, cast_u64(v), num_bits);
+        fmt_append_hexpad(buf, spec, u64(v), num_bits);
     } else {
         fmt_append_printf(buf, spec, "%lli", v);
     }
 }
 
-static void fmt_append_u8(buf *buf, fmt_spec spec, u8 v) { fmt_append_usigned(buf, spec, cast_u64(v), 8); }
-static void fmt_append_u16(buf *buf, fmt_spec spec, u16 v) { fmt_append_usigned(buf, spec, cast_u64(v), 16); }
-static void fmt_append_u32(buf *buf, fmt_spec spec, u32 v) { fmt_append_usigned(buf, spec, cast_u64(v), 32); }
-static void fmt_append_u64(buf *buf, fmt_spec spec, u64 v) { fmt_append_usigned(buf, spec, cast_u64(v), 64); }
+static void fmt_append_u8(buf *buf, fmt_spec spec, u8 v) { fmt_append_usigned(buf, spec, u64(v), 8); }
+static void fmt_append_u16(buf *buf, fmt_spec spec, u16 v) { fmt_append_usigned(buf, spec, u64(v), 16); }
+static void fmt_append_u32(buf *buf, fmt_spec spec, u32 v) { fmt_append_usigned(buf, spec, u64(v), 32); }
+static void fmt_append_u64(buf *buf, fmt_spec spec, u64 v) { fmt_append_usigned(buf, spec, u64(v), 64); }
 
-static void fmt_append_i8(buf *buf, fmt_spec spec, i8 v) { fmt_append_signed(buf, spec, cast_i64(v), 8); }
-static void fmt_append_i16(buf *buf, fmt_spec spec, i16 v) { fmt_append_signed(buf, spec, cast_i64(v), 16); }
-static void fmt_append_i32(buf *buf, fmt_spec spec, i32 v) { fmt_append_signed(buf, spec, cast_i64(v), 32); }
-static void fmt_append_i64(buf *buf, fmt_spec spec, i64 v) { fmt_append_signed(buf, spec, cast_i64(v), 64); }
+static void fmt_append_i8(buf *buf, fmt_spec spec, i8 v) { fmt_append_signed(buf, spec, i64(v), 8); }
+static void fmt_append_i16(buf *buf, fmt_spec spec, i16 v) { fmt_append_signed(buf, spec, i64(v), 16); }
+static void fmt_append_i32(buf *buf, fmt_spec spec, i32 v) { fmt_append_signed(buf, spec, i64(v), 32); }
+static void fmt_append_i64(buf *buf, fmt_spec spec, i64 v) { fmt_append_signed(buf, spec, i64(v), 64); }
 
 static void fmt_append_f32(buf *buf, fmt_spec spec, f32 v) {
     if (spec.hex || spec.hexpad) {
@@ -292,7 +292,7 @@ static void fmt_append_any(buf *buf, fmt_spec spec, any v) {
         case ANY_TAG_RANGE_U64: fmt_append_any_range(buf, spec, anyof(v._range_u64.min), anyof(v._range_u64.max)); break;
         case ANY_TAG_RANGE_F32: fmt_append_any_range(buf, spec, anyof(v._range_f32.min), anyof(v._range_f32.max)); break;
         case ANY_TAG_RANGE_F64: fmt_append_any_range(buf, spec, anyof(v._range_f64.min), anyof(v._range_f64.max)); break;
-        case ANY_TAG_PTR: fmt_append_ptr(buf, spec, v._void_ptr); break;
+        case ANY_TAG_PTR: fmt_append_ptr(buf, spec, v._ptr); break;
         default: fmt_append_raw(buf, spec, str("[unknown any_tag]")); break;
     }
 }
@@ -502,7 +502,7 @@ static bool fmt_parse_u32(str s, u32 *out) {
     if (s.len > 0) {
         ret = true;
         for_span (u8, c, s) {
-            if (u32_is_ascii_digit(*c)) {
+            if (u32_is_digit(*c)) {
                 // @Todo Check for overflow.
                 parsed *= 10;
                 parsed += *c - '0';
@@ -530,7 +530,7 @@ static bool fmt_parse_u64(str s, u64 *out) {
     if (s.len > 0) {
         ret = true;
         for_span (u8, c, s) {
-            if (u32_is_ascii_digit(*c)) {
+            if (u32_is_digit(*c)) {
                 // @Todo Check for overflow.
                 parsed *= 10;
                 parsed += *c - '0';

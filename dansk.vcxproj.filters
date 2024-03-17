@@ -15,15 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="dansk.c">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="dansk.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="base\ansiconsole.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="base\base_buffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -43,9 +34,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="base\base.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="base\base_types.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="base\base_buffer.c">
@@ -72,28 +60,37 @@
     <ClInclude Include="base\base_print.c">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="dansk_ast.c">
+    <ClInclude Include="base\base_ansiconsole.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="base\base_buf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="base\base_builder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="base\base_core.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="base\base_fmt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="base\base_buf.c">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="dansk_ast.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="dansk_tokenizer.c">
+    <ClInclude Include="base\base_builder.c">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="dansk_tokenizer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="dansk_parser.c">
+    <ClInclude Include="base\base_fmt.c">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="dansk_parser.h">
+    <ClInclude Include="dk.c">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="dansk_interp.c">
+    <ClInclude Include="dk_tests.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="dansk_interp.h">
+    <ClInclude Include="dk.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -103,6 +100,11 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="eksempel.txt" />
+    <CopyFileToFolders Include="eksempel.dk" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint" />
+    <None Include="tests\basic.dk.test" />
+    <None Include="tests\tests.dk" />
   </ItemGroup>
 </Project>

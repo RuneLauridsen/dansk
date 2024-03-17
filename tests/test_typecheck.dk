@@ -1,0 +1,44 @@
+════════════════════════════════════════════════════════════════
+err assign bool to int
+────────────────────────────────────────────────────────────────
+Offentlig Funktion Hovedsagelig returnerer heltal.
+Goddag.
+    Lad A være et heltal.
+    Sæt A til 99.
+    Sæt A til sand.
+    Return 0.
+Farvel.
+────────────────────────────────────────────────────────────────
+Incompatible types
+────────────────────────────────────────────────────────────────
+
+════════════════════════════════════════════════════════════════
+err assign int to bool.
+────────────────────────────────────────────────────────────────
+Offentlig Funktion Hovedsagelig returnerer heltal.
+Goddag.
+    Lad A være en påstand.
+    Sæt A til falsk.
+    Sæt A til 99.
+    Return 0.
+Farvel.
+────────────────────────────────────────────────────────────────
+Incompatible types
+────────────────────────────────────────────────────────────────
+
+════════════════════════════════════════════════════════════════
+err if condition
+────────────────────────────────────────────────────────────────
+Offentlig Funktion Hovedsagelig returnerer heltal.
+Goddag.
+    Hvis 1 plus 1.
+    Goddag.
+        Kald Print 1.
+    Farvel.
+
+    Return 0.
+Farvel.
+────────────────────────────────────────────────────────────────
+Condition in if statement does not evalutate to a boolean.
+────────────────────────────────────────────────────────────────
+

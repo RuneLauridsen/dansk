@@ -145,7 +145,7 @@ static i32 encode_single_utf8_codepoint(u32 c, u8 *out) {
 
 static i32 encode_single_utf16_codepoint(u32 codepoint, u16 *out) {
     // @Implement
-    out[0] = cast_u16(codepoint);
+    out[0] = u16(codepoint);
     return 1;
 }
 

@@ -34,13 +34,21 @@ static char_flags u8_get_char_flags(u8 c);
 //
 ////////////////////////////////////////////////////////////////
 
-static bool u32_is_ascii_letter(u32 c);
-static bool u32_is_ascii_digit(u32 c);
-static bool u32_is_ascii_upper(u32 c);
-static bool u32_is_ascii_lower(u32 c);
-static bool u32_is_ascii_non_printable(u32 c);
-static bool u32_is_ascii_printable(u32 c);
-static bool u32_is_ascii_one_of(u32 c, str of);
+static bool u8_is_letter(u8 c);
+static bool u8_is_digit(u8 c);
+static bool u8_is_upper(u8 c);
+static bool u8_is_lower(u8 c);
+static bool u8_is_non_printable(u8 c);
+static bool u8_is_printable(u8 c);
+static bool u8_is_one_of(u8 c, str of);
+
+static bool u32_is_letter(u32 c);
+static bool u32_is_digit(u32 c);
+static bool u32_is_upper(u32 c);
+static bool u32_is_lower(u32 c);
+static bool u32_is_non_printable(u32 c);
+static bool u32_is_printable(u32 c);
+static bool u32_is_one_of(u32 c, str of);
 
 ////////////////////////////////////////////////////////////////
 //
@@ -63,8 +71,8 @@ static str substr_idx(str s, u64 idx);
 static str substr_len(str s, u64 idx, u64 len);
 static str substr_range(str s, u64_range r);
 
-static str str_chop_left(str *s, u64 idx); // @Implement
-static str str_chop_right(str *s, u64 idx); // @Implement
+static str str_chop_left(str *s, u64 idx);
+static str str_chop_right(str *s, u64 idx);
 static str str_chop_by_delim(str *s, str delim);
 
 static str str_left(str s, u64 len);
@@ -83,7 +91,7 @@ static str_x3 str_split_x3(str s, u64 a, u64 b);
 ////////////////////////////////////////////////////////////////
 //
 //
-// Fuzzy
+// String list
 //
 //
 ////////////////////////////////////////////////////////////////
@@ -99,7 +107,23 @@ struct str_list {
     str_node *first;
     str_node *last;
     u64 count;
+    u64 total_len;
 };
+
+static void str_list_push(str_list *list, arena *arena, str s);
+static void str_list_push_copy(str_list *list, arena *arena, str s);
+static void str_list_push_fmt_args(str_list *list, arena *arena, args args);
+static str  str_list_join(str_list *list, arena *arena, str seperator);
+
+#define str_list_push_fmt(list, arena, ...) (str_list_push_fmt_args((list), (arena), argsof(__VA_ARGS__)))
+
+////////////////////////////////////////////////////////////////
+//
+//
+// Fuzzy
+//
+//
+////////////////////////////////////////////////////////////////
 
 typedef struct fuzzy_match_node fuzzy_match_node;
 struct fuzzy_match_node {
