@@ -622,6 +622,7 @@ struct dk_bc_opcode_info {
 };
 
 static readonly dk_bc_opcode_info dk_bc_opcode_infos[DK_BC_OPCODE_COUNT] = {
+#if 0 // Enlish mnemonics
     [DK_BC_OPCODE_NOP] =   { STR("nop"),                                 },
     [DK_BC_OPCODE_LDI]   = { STR("ldi"),      DK_BC_OPERAND_KIND_IMM     },
     [DK_BC_OPCODE_LDL]   = { STR("ldl"),      DK_BC_OPERAND_KIND_LOC     },
@@ -638,8 +639,6 @@ static readonly dk_bc_opcode_info dk_bc_opcode_infos[DK_BC_OPCODE_COUNT] = {
     [DK_BC_OPCODE_FADD]  = { STR("fadd"),                                },
     [DK_BC_OPCODE_FSUB]  = { STR("fsub"),                                },
     [DK_BC_OPCODE_FMUL]  = { STR("fmul"),                                },
-    [DK_BC_OPCODE_FMUL]  = { STR("fmul"),                                },
-    [DK_BC_OPCODE_FDIV]  = { STR("fdiv"),                                },
     [DK_BC_OPCODE_FDIV]  = { STR("fdiv"),                                },
 
     [DK_BC_OPCODE_AND]   = { STR("and"),                                 },
@@ -649,6 +648,33 @@ static readonly dk_bc_opcode_info dk_bc_opcode_infos[DK_BC_OPCODE_COUNT] = {
     [DK_BC_OPCODE_CALL]  = { STR("call"),     DK_BC_OPERAND_KIND_SYM     },
     [DK_BC_OPCODE_RET]   = { STR("ret"),                                 },
     [DK_BC_OPCODE_BR]    = { STR("br"),       DK_BC_OPERAND_KIND_POS     },
+#else
+    [DK_BC_OPCODE_NOP] =   { STR("nop"),                                 },
+    [DK_BC_OPCODE_LDI]   = { STR("ilu"),      DK_BC_OPERAND_KIND_IMM     }, // Indlæs umiddelbar
+    [DK_BC_OPCODE_LDL]   = { STR("ill"),      DK_BC_OPERAND_KIND_LOC     }, // Indlæs lokal
+    [DK_BC_OPCODE_POP]   = { STR("tag"),                                 }, 
+    [DK_BC_OPCODE_STL]   = { STR("gel"),      DK_BC_OPERAND_KIND_LOC     }, // Gem lokal
+
+    [DK_BC_OPCODE_ADD]   = { STR("plus"),                                 },
+    [DK_BC_OPCODE_SUB]   = { STR("minus"),                                 },
+    [DK_BC_OPCODE_UMUL]  = { STR("ugange"),                                },
+    [DK_BC_OPCODE_IMUL]  = { STR("igange"),                                },
+    [DK_BC_OPCODE_UDIV]  = { STR("udel"),                                },
+    [DK_BC_OPCODE_IDIV]  = { STR("idel"),                                },
+
+    [DK_BC_OPCODE_FADD]  = { STR("fplus"),                                },
+    [DK_BC_OPCODE_FSUB]  = { STR("fminus"),                                },
+    [DK_BC_OPCODE_FMUL]  = { STR("fgange"),                                },
+    [DK_BC_OPCODE_FDIV]  = { STR("fdel"),                                },
+
+    [DK_BC_OPCODE_AND]   = { STR("or"),                                 },
+    [DK_BC_OPCODE_OR]    = { STR("elr"),                                  },
+    [DK_BC_OPCODE_NOT]   = { STR("ikke"),                                 },
+
+    [DK_BC_OPCODE_CALL]  = { STR("kald"),     DK_BC_OPERAND_KIND_SYM     },
+    [DK_BC_OPCODE_RET]   = { STR("tilbage"),                                 },
+    [DK_BC_OPCODE_BR]    = { STR("gren"),     DK_BC_OPERAND_KIND_POS     },
+#endif
 };
 
 typedef struct dk_bc_symbol dk_bc_symbol;
