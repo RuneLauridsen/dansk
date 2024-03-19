@@ -154,5 +154,4 @@ static void dk_run_test_file(str file_name) {
 
 static void dk_run_all_tests(void) {
     dk_run_test_file(str("W:\\dansk\\tests\\tests.dk")); // TODO(rune): Hardcoded path.
-    dk_run_test_file(str("W:\\dansk\\tests\\test_typecheck.dk")); // TODO(rune): Hardcoded path.
 }

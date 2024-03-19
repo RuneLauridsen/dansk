@@ -8,8 +8,8 @@
 int main(int argc, char **argv) {
     SetConsoleOutputCP(65001); // utf8
 
-    dk_run_all_tests();
-    //dk_run_test_file_filtered(str("W:\\dansk\\tests\\tests.dk"), str("err mix"));
+    //dk_run_all_tests();
+    dk_run_test_file_filtered(str("W:\\dansk\\tests\\tests.dk"), str(""));
 
     return 0;
 }

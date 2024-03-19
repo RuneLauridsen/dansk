@@ -86,6 +86,7 @@ typedef enum dk_token_kind {
     DK_TOKEN_KIND_LET,
     DK_TOKEN_KIND_BE,
     DK_TOKEN_KIND_TO,
+    DK_TOKEN_KIND_AS,
     DK_TOKEN_KIND_CALL,
     DK_TOKEN_KIND_EN_ET,
     DK_TOKEN_KIND_RETURN,
@@ -94,6 +95,8 @@ typedef enum dk_token_kind {
     DK_TOKEN_KIND_TRUE,
     DK_TOKEN_KIND_IF,
     DK_TOKEN_KIND_ELSE,
+    DK_TOKEN_KIND_KEYWORD,
+    DK_TOKEN_KIND_ARGUMENT,
 
     DK_TOKEN_KIND_COUNT,
 } dk_token_kind;
@@ -105,45 +108,47 @@ struct dk_token_spelling {
 };
 
 static readonly dk_token_spelling dk_token_spellings[] = {
-    { DK_TOKEN_KIND_DOT,            STR("."),           },
-    { DK_TOKEN_KIND_COMMA,          STR(","),           },
-    { DK_TOKEN_KIND_PAREN_OPEN,     STR("("),           },
-    { DK_TOKEN_KIND_PAREN_CLOSE,    STR(")"),           },
-
-    { DK_TOKEN_KIND_PUBLIC,         STR("offentlig"),   },
-    { DK_TOKEN_KIND_PROC,           STR("funktion"),    },
-
-    { DK_TOKEN_KIND_BEGIN,          STR("goddag"),      },
-    { DK_TOKEN_KIND_END,            STR("farvel"),      },
-    { DK_TOKEN_KIND_BEGIN,          STR("godmorgen"),   },
-    { DK_TOKEN_KIND_END,            STR("godnat"),      },
-
-    { DK_TOKEN_KIND_LET,            STR("lad"),         },
-    { DK_TOKEN_KIND_EN_ET,          STR("en"),          },
-    { DK_TOKEN_KIND_EN_ET,          STR("et"),          },
-    { DK_TOKEN_KIND_BE,             STR("være"),        },
-    { DK_TOKEN_KIND_TO,             STR("til"),         },
-    { DK_TOKEN_KIND_ASSIGN,         STR("sæt"),         },
-
-    { DK_TOKEN_KIND_CALL,           STR("kald"),        },
-    { DK_TOKEN_KIND_RETURN,         STR("return"),      },
-    { DK_TOKEN_KIND_RETURN,         STR("returnerer"),  },
-    { DK_TOKEN_KIND_IF,             STR("hvis"),        },
-    { DK_TOKEN_KIND_ELSE,           STR("ellers"),      },
-
-    { DK_TOKEN_KIND_ADD,            STR("plus"),        },
-    { DK_TOKEN_KIND_SUB,            STR("minus"),       },
-    { DK_TOKEN_KIND_MUL,            STR("gange"),       },
-    { DK_TOKEN_KIND_AND,            STR("og"),          },
-    { DK_TOKEN_KIND_AND,            STR("samt"),        },
-    { DK_TOKEN_KIND_OR,             STR("eller"),       },
-
-    { DK_TOKEN_KIND_FALSE,          STR("falsk"),       },
-    { DK_TOKEN_KIND_FALSE,          STR("falskt"),      },
-    { DK_TOKEN_KIND_TRUE,           STR("sand"),        },
-    { DK_TOKEN_KIND_TRUE,           STR("sandt"),       },
-
-    { DK_TOKEN_KIND_COMMENT,        STR("bemærk"),      },
+    { DK_TOKEN_KIND_DOT,            STR("."),            },
+    { DK_TOKEN_KIND_COMMA,          STR(","),            },
+    { DK_TOKEN_KIND_PAREN_OPEN,     STR("("),            },
+    { DK_TOKEN_KIND_PAREN_CLOSE,    STR(")"),            },
+                                                         
+    { DK_TOKEN_KIND_PUBLIC,         STR("offentlig"),    },
+    { DK_TOKEN_KIND_PROC,           STR("funktion"),     },
+                                                         
+    { DK_TOKEN_KIND_BEGIN,          STR("goddag"),       },
+    { DK_TOKEN_KIND_END,            STR("farvel"),       },
+    { DK_TOKEN_KIND_BEGIN,          STR("godmorgen"),    },
+    { DK_TOKEN_KIND_END,            STR("godnat"),       },
+                                                         
+    { DK_TOKEN_KIND_LET,            STR("lad"),          },
+    { DK_TOKEN_KIND_EN_ET,          STR("en"),           },
+    { DK_TOKEN_KIND_EN_ET,          STR("et"),           },
+    { DK_TOKEN_KIND_BE,             STR("være"),         },
+    { DK_TOKEN_KIND_TO,             STR("til"),          },
+    { DK_TOKEN_KIND_AS,             STR("som"),           },
+    { DK_TOKEN_KIND_ASSIGN,         STR("sæt"),          },
+                                                         
+    { DK_TOKEN_KIND_CALL,           STR("kald"),         },
+    { DK_TOKEN_KIND_RETURN,         STR("tilbagegiv"),   },
+    { DK_TOKEN_KIND_RETURN,         STR("tilbagegiver"), },
+    { DK_TOKEN_KIND_IF,             STR("hvis"),         },
+    { DK_TOKEN_KIND_ELSE,           STR("ellers"),       },
+    { DK_TOKEN_KIND_ARGUMENT,       STR("tager"),        },
+                                                         
+    { DK_TOKEN_KIND_ADD,            STR("plus"),         },
+    { DK_TOKEN_KIND_SUB,            STR("minus"),        },
+    { DK_TOKEN_KIND_MUL,            STR("gange"),        },
+    { DK_TOKEN_KIND_AND,            STR("og"),           },
+    { DK_TOKEN_KIND_AND,            STR("samt"),         },
+    { DK_TOKEN_KIND_OR,             STR("eller"),        },
+                                                         
+    { DK_TOKEN_KIND_FALSE,          STR("falsk"),        },
+    { DK_TOKEN_KIND_FALSE,          STR("falskt"),       },
+    { DK_TOKEN_KIND_TRUE,           STR("sand"),         },
+    { DK_TOKEN_KIND_TRUE,           STR("sandt"),        },
+                                                         
+    { DK_TOKEN_KIND_COMMENT,        STR("bemærk"),       },
 };
 
 typedef struct dk_token dk_token;
@@ -314,12 +319,28 @@ struct dk_ast_stmt {
     dk_ast_stmt *next;
 };
 
+typedef struct dk_ast_proc_arg dk_ast_proc_arg;
+struct dk_ast_proc_arg {
+    str name;
+    str type_name;
+    struct dk_symbol *symbol;
+    dk_ast_proc_arg *next;
+};
+
+typedef struct dk_ast_proc_args dk_ast_proc_args;
+struct dk_ast_proc_args {
+    dk_ast_proc_arg *first;
+    dk_ast_proc_arg *last;
+    u64 count;
+};
+
 typedef struct dk_ast_proc dk_ast_proc;
 struct dk_ast_proc {
     str ident;
     str return_type_name;
     struct dk_symbol *type;
     dk_ast_stmts stmts;
+    dk_ast_proc_args args;
 };
 
 typedef enum dk_ast_visibilty {
@@ -622,7 +643,7 @@ struct dk_bc_opcode_info {
 };
 
 static readonly dk_bc_opcode_info dk_bc_opcode_infos[DK_BC_OPCODE_COUNT] = {
-#if 0 // Enlish mnemonics
+#if 1 // English mnemonics
     [DK_BC_OPCODE_NOP] =   { STR("nop"),                                 },
     [DK_BC_OPCODE_LDI]   = { STR("ldi"),      DK_BC_OPERAND_KIND_IMM     },
     [DK_BC_OPCODE_LDL]   = { STR("ldl"),      DK_BC_OPERAND_KIND_LOC     },

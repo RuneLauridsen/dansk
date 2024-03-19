@@ -99,12 +99,14 @@ static str dk_token_kind_as_str(dk_token_kind a) {
         case DK_TOKEN_KIND_LET:             return str("DK_TOKEN_KIND_LET");
         case DK_TOKEN_KIND_BE:              return str("DK_TOKEN_KIND_BE");
         case DK_TOKEN_KIND_TO:              return str("DK_TOKEN_KIND_TO");
+        case DK_TOKEN_KIND_AS:              return str("DK_TOKEN_KIND_AS");
         case DK_TOKEN_KIND_CALL:            return str("DK_TOKEN_KIND_CALL");
         case DK_TOKEN_KIND_EN_ET:           return str("DK_TOKEN_KIND_EN_ET");
         case DK_TOKEN_KIND_RETURN:          return str("DK_TOKEN_KIND_RETURN");
         case DK_TOKEN_KIND_COMMENT:         return str("DK_TOKEN_KIND_COMMENT");
         case DK_TOKEN_KIND_IF:              return str("DK_TOKEN_KIND_IF");
         case DK_TOKEN_KIND_ELSE:            return str("DK_TOKEN_KIND_ELSE");
+        case DK_TOKEN_KIND_ARGUMENT:        return str("DK_TOKEN_KIND_ARGUMENT");
 
         case DK_TOKEN_KIND_FALSE:           return str("DK_TOKEN_KIND_FALSE");
         case DK_TOKEN_KIND_TRUE:            return str("DK_TOKEN_KIND_TRUE");
@@ -492,6 +494,23 @@ static dk_ast_proc dk_parse_proc(dk_parser *p) {
     dk_token ident_token = dk_eat_token_kind(p, DK_TOKEN_KIND_IDENT);
     proc.ident = ident_token.text;
 
+    //- Arguments.
+    while (p->peek.kind == DK_TOKEN_KIND_ARGUMENT) {
+        // NOTE(rune): "tager A som heltal"
+        dk_eat_token_kind(p, DK_TOKEN_KIND_ARGUMENT);
+        dk_token arg_name_token = dk_eat_token_kind(p, DK_TOKEN_KIND_IDENT);
+        dk_eat_token_kind(p, DK_TOKEN_KIND_AS);
+        dk_token arg_type_token = dk_eat_token_kind(p, DK_TOKEN_KIND_IDENT);
+        dk_eat_token_kind(p, DK_TOKEN_KIND_COMMA);
+
+        dk_ast_proc_arg *arg = arena_push_struct(&dk_ast_arena, dk_ast_proc_arg);
+        arg->name      = arg_name_token.text;
+        arg->type_name = arg_type_token.text;
+
+        slist_add(&proc.args, arg);
+        proc.args.count++;
+    }
+
     //- Return type.
     dk_eat_token_kind(p, DK_TOKEN_KIND_RETURN);
     dk_eat_token_kind_maybe(p, DK_TOKEN_KIND_EN_ET);
@@ -592,6 +611,10 @@ static dk_symbol *dk_symbol_table_add(dk_symbol_table *table, str name) {
 //
 ////////////////////////////////////////////////////////////////
 
+static readonly dk_symbol dk_nil_symbol = {
+    .type = &dk_nil_symbol,
+};
+
 static dk_symbol *dk_check_symbol(dk_checker *checker, str name) {
     dk_symbol *sym = null;
 
@@ -600,6 +623,7 @@ static dk_symbol *dk_check_symbol(dk_checker *checker, str name) {
         for_count (dk_symbol, it, checker->local_symbols.slots, checker->local_symbols.slot_count) {
             if (str_eq_nocase(it->name, name)) {
                 sym = it;
+                break;
             }
         }
     }
@@ -609,6 +633,7 @@ static dk_symbol *dk_check_symbol(dk_checker *checker, str name) {
         for_count (dk_symbol, it, checker->global_symbols.slots, checker->global_symbols.slot_count) {
             if (str_eq_nocase(it->name, name)) {
                 sym = it;
+                break;
             }
         }
     }
@@ -616,14 +641,19 @@ static dk_symbol *dk_check_symbol(dk_checker *checker, str name) {
     //- Undeclared symbol.
     if (sym == null) {
         dk_report_err(dk_global_err, dk_tprint("Undeclared symbol '%'", name)); // TODO(rune): Better error message.
+        sym = &dk_nil_symbol;
+    }
+
+    //- Has proc been checked yet?
+    if (sym->kind == DK_SYMBOL_KIND_PROC && sym->type == null) {
+        if (sym->id < 0xdeadbeef) { // TODO(rune): Cleanup builtins.
+            assert(sym->ast->kind == DK_AST_SYMBOL_KIND_PROC);
+            sym->type = dk_check_symbol(checker, sym->ast->proc.return_type_name);
+        }
     }
 
     return sym;
 }
-
-static readonly dk_symbol dk_nil_symbol = {
-    .type = &dk_nil_symbol,
-};
 
 static dk_symbol *dk_check_expr(dk_checker *checker, dk_ast_expr *expr) {
     dk_symbol *ret = &dk_nil_symbol;
@@ -704,6 +734,19 @@ static void dk_check_proc(dk_checker *checker, dk_symbol *symbol) {
 
     u64 local_size = 0;
 
+    //- Arguments.
+    for_list (dk_ast_proc_arg, arg, proc->args) {
+        dk_symbol *arg_symbol = dk_symbol_table_add(&checker->local_symbols, arg->name);
+        arg_symbol->kind = DK_SYMBOL_KIND_LOCAL;
+        arg_symbol->id   = (u32)local_size; // TODO(rune): Cast?
+        arg_symbol->type = dk_check_symbol(checker, arg->type_name);
+
+        local_size += arg_symbol->type->size;
+
+        arg->symbol = arg_symbol;
+    }
+
+    //- Statement.
     for_list (dk_ast_stmt, stmt, proc->stmts) {
         if (dk_global_err->err_list.count) break;
 
@@ -1074,8 +1117,7 @@ static void dk_emit_stmts(dk_emitter *e, dk_ast_stmts stmts, dk_compiler_local_l
                     case DK_AST_EXPR_KIND_IDENT: {
                         switch (left->sym->kind) {
                             case DK_SYMBOL_KIND_LOCAL: {
-                                // TODO(rune): Decide instruction depending in type.
-                                dk_emit_inst2(e, DK_BC_OPCODE_STL, left->sym->id);
+                                dk_emit_inst2(e, DK_BC_OPCODE_STL, dk_compiler_get_local(*locals, left->ident));
                             } break;
 
                             default: {
@@ -1147,7 +1189,10 @@ static void dk_emit_proc(dk_emitter *e, dk_ast_proc *proc) {
     dk_compiler_local_list locals = { 0 };
 
     //- Prologue.
-    // TODO(rune): Pop arguments to locals.
+    for_list (dk_ast_proc_arg, arg, proc->args) {
+        dk_compiler_add_local(&locals, arg->name, arg->type_name);
+        dk_emit_inst2(e, DK_BC_OPCODE_STL, dk_compiler_get_local(locals, arg->name));
+    }
 
     //- Body.
     dk_emit_stmts(e, proc->stmts, &locals);
@@ -1163,7 +1208,6 @@ static dk_program dk_program_from_ast(dk_ast ast) {
     dk_print_ast(ast);
 #endif
     e.symbol_table = dk_check_ast(ast);
-
 
     for_list (dk_ast_symbol, symbol, ast.symbols) {
         switch (symbol->kind) {
@@ -1192,8 +1236,13 @@ static dk_program dk_program_from_ast(dk_ast ast) {
 
 static dk_program dk_program_from_str(str s, dk_err_sink *err_sink) {
     dk_global_err = err_sink;
+
+    if (err_sink->err_list.count) return (dk_program) { 0 };
     dk_ast ast = dk_ast_from_str(s);
+
+    if (err_sink->err_list.count) return (dk_program) { 0 };
     dk_program program = dk_program_from_ast(ast);
+
     return program;
 }
 
@@ -1541,7 +1590,17 @@ static void dk_print_ast_symbol(dk_ast_symbol *symbol, u64 level) {
         case DK_AST_SYMBOL_KIND_PROC: {
             dk_ast_proc *proc = &symbol->proc;
             println("symbol-proc $% returns $%", proc->ident, proc->return_type_name);
-            dk_print_ast_stmts(proc->stmts, level);
+
+            dk_print_ast_level(level + 1);
+            println("args");
+            for_list (dk_ast_proc_arg, arg, proc->args) {
+                dk_print_ast_level(level + 2);
+                println("arg $% type $%", arg->name, arg->type_name);
+            }
+
+            dk_print_ast_level(level + 1);
+            println("stmts");
+            dk_print_ast_stmts(proc->stmts, level + 2);
         } break;
 
         default: {
@@ -1555,7 +1614,6 @@ static void dk_print_ast(dk_ast ast) {
         dk_print_ast_symbol(symbol, 0);
     }
 }
-
 
 static void dk_print_program(dk_program program) {
     dk_buffer *head = &program.head;
