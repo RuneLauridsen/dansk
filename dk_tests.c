@@ -137,9 +137,6 @@ static void dk_run_test_file(str file_name, arena *arena) {
 // NOTE(rune): For debugging.
 static void dk_run_all_tests(void) {
     arena arena = { 0 };
-
     dk_run_test_file(str("W:\\dansk\\tests\\tests.dk"), &arena); // TODO(rune): Hardcoded path.
-    dk_run_test_file(str("W:\\dansk\\tests\\test_typecheck.dk"), &arena); // TODO(rune): Hardcoded path.
-
     arena_free(&arena);
 }

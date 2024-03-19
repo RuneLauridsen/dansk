@@ -1,10 +1,10 @@
 ════════════════════════════════════════════════════════════════
 print immediate
 ────────────────────────────────────────────────────────────────
-Offentlig Funktion Hovedsagelig returnerer heltal.
+Offentlig Funktion Hovedsagelig tilbagegiver heltal.
 Goddag.
     Kald Print 10.
-    Return 0.
+    Tilbagegiv 0.
 Farvel.
 ────────────────────────────────────────────────────────────────
 10
@@ -14,12 +14,12 @@ Farvel.
 ════════════════════════════════════════════════════════════════
 print local
 ────────────────────────────────────────────────────────────────
-Offentlig Funktion Hovedsagelig returnerer heltal.
+Offentlig Funktion Hovedsagelig tilbagegiver heltal.
 Goddag.
     Lad A være et heltal.
     Sæt A til 16.
     Kald Print A.
-    Return 0.
+    Tilbagegiv 0.
 Farvel.
 ────────────────────────────────────────────────────────────────
 16
@@ -30,15 +30,15 @@ Farvel.
 ════════════════════════════════════════════════════════════════
 print proc return value
 ────────────────────────────────────────────────────────────────
-Offentlig Funktion Hovedsagelig returnerer heltal.
+Offentlig Funktion Hovedsagelig tilbagegiver heltal.
 Goddag.
     Kald Print (Kald AndenFunktion).
-    Return 0.
+    Tilbagegiv 0.
 Farvel.
 
-Offentlig Funktion AndenFunktion returnerer heltal.
+Offentlig Funktion AndenFunktion tilbagegiver heltal.
 Goddag.
-    Return 89.
+    Tilbagegiv 89.
 Farvel.
 ────────────────────────────────────────────────────────────────
 89
@@ -48,12 +48,12 @@ Farvel.
 ════════════════════════════════════════════════════════════════
 basic arithmetic
 ────────────────────────────────────────────────────────────────
-Offentlig Funktion Hovedsagelig returnerer heltal.
+Offentlig Funktion Hovedsagelig tilbagegiver heltal.
 Goddag.
     Lad A være et heltal.
     Sæt A til 2 plus 3 gange 4 plus 5.
     Kald Print A.
-    Return 0.
+    Tilbagegiv 0.
 Farvel.
 ────────────────────────────────────────────────────────────────
 19
@@ -65,13 +65,13 @@ Farvel.
 ════════════════════════════════════════════════════════════════
 comment
 ────────────────────────────────────────────────────────────────
-Offentlig Funktion Hovedsagelig returnerer heltal.
+Offentlig Funktion Hovedsagelig tilbagegiver heltal.
 Goddag.
     Lad A være et heltal.
     Sæt A til 2.
     Bemærk Sæt A til 3.
     Kald Print A.
-    Return 0.
+    Tilbagegiv 0.
 Farvel.
 ────────────────────────────────────────────────────────────────
 2
@@ -83,7 +83,7 @@ Farvel.
 ════════════════════════════════════════════════════════════════
 logical operators
 ────────────────────────────────────────────────────────────────
-Offentlig Funktion Hovedsagelig returnerer heltal.
+Offentlig Funktion Hovedsagelig tilbagegiver heltal.
 Goddag.
 
     Kald Print Falsk og falsk.
@@ -96,7 +96,7 @@ Goddag.
     Kald Print sand  eller falsk.
     Kald Print sand  eller sand.
 
-    Return 0.
+    Tilbagegiv 0.
 Farvel.
 ────────────────────────────────────────────────────────────────
 0
@@ -116,7 +116,7 @@ Farvel.
 ════════════════════════════════════════════════════════════════
 if statement
 ────────────────────────────────────────────────────────────────
-Offentlig Funktion Hovedsagelig returnerer heltal.
+Offentlig Funktion Hovedsagelig tilbagegiver heltal.
 Goddag.
 
     Hvis falsk.
@@ -129,7 +129,7 @@ Goddag.
         Kald Print 321.
     Farvel.
 
-    Return 0.
+    Tilbagegiv 0.
 Farvel.
 ────────────────────────────────────────────────────────────────
 321
@@ -141,7 +141,7 @@ Farvel.
 ════════════════════════════════════════════════════════════════
 if else statement
 ────────────────────────────────────────────────────────────────
-Offentlig Funktion Hovedsagelig returnerer heltal.
+Offentlig Funktion Hovedsagelig tilbagegiver heltal.
 Goddag.
 
     Hvis falsk.
@@ -163,7 +163,7 @@ Goddag.
         Kald Print 654.
     Farvel.
 
-    Return 0.
+    Tilbagegiv 0.
 Farvel.
 ────────────────────────────────────────────────────────────────
 321
@@ -175,7 +175,7 @@ Farvel.
 ════════════════════════════════════════════════════════════════
 single statement blocks
 ────────────────────────────────────────────────────────────────
-Offentlig Funktion Hovedsagelig returnerer heltal.
+Offentlig Funktion Hovedsagelig tilbagegiver heltal.
 Goddag.
     Hvis falsk.
         Kald Print 123.
@@ -187,7 +187,7 @@ Goddag.
     Ellers.
         Kald Print 654.
 
-    Return 0.
+    Tilbagegiv 0.
  Farvel.
 ────────────────────────────────────────────────────────────────
 321
@@ -200,14 +200,14 @@ Goddag.
 ════════════════════════════════════════════════════════════════
 print float
 ────────────────────────────────────────────────────────────────
-Offentlig Funktion Hovedsagelig returnerer heltal.
+Offentlig Funktion Hovedsagelig tilbagegiver heltal.
 Goddag.
     Lad A være en flyder.
     Sæt A til 1,23.
 
     Kald PrintFlyder A.
 
-    Return 0.
+    Tilbagegiv 0.
  Farvel.
 ────────────────────────────────────────────────────────────────
 1.230000
@@ -220,10 +220,10 @@ Goddag.
 ════════════════════════════════════════════════════════════════
 float arithmetic
 ────────────────────────────────────────────────────────────────
-Offentlig Funktion Hovedsagelig returnerer heltal.
+Offentlig Funktion Hovedsagelig tilbagegiver heltal.
 Goddag.
     Kald PrintFlyder 1,0 plus 2,0.
-    Return 0.
+    Tilbagegiv 0.
  Farvel.
 ────────────────────────────────────────────────────────────────
 3.000000
@@ -239,10 +239,10 @@ Goddag.
 ════════════════════════════════════════════════════════════════
 err mix float and int
 ────────────────────────────────────────────────────────────────
-Offentlig Funktion Hovedsagelig returnerer heltal.
+Offentlig Funktion Hovedsagelig tilbagegiver heltal.
 Goddag.
     Kald PrintFlyder 1,23 plus 1.
-    Return 0.
+    Tilbagegiv 0.
 Farvel.
 ────────────────────────────────────────────────────────────────
 Incompatibles types in binary operator.
@@ -251,6 +251,71 @@ Incompatibles types in binary operator.
 
 
 
+════════════════════════════════════════════════════════════════
+arguments
+────────────────────────────────────────────────────────────────
+Offentlig Funktion Hovedsagelig tilbagegiver heltal.
+Goddag.
+    Lad C være et heltal.
+    Lad D være et heltal.
+    Sæt C til kald LægSammen 9 , 10.
+    Sæt D til kald LægSammen 64 , 64.
+    Kald Print C.
+    Kald Print D.
+    Tilbagegiv 0.
+Farvel.
+
+Offentlig Funktion LægSammen tager A som heltal, tager B som heltal, tilbagegiver heltal.
+Goddag.
+    Tilbagegiv A plus B.
+Farvel.
+────────────────────────────────────────────────────────────────
+19
+128
+────────────────────────────────────────────────────────────────
+
+
+
+════════════════════════════════════════════════════════════════
+err type check arguments 1
+────────────────────────────────────────────────────────────────
+Offentlig Funktion Hovedsagelig tilbagegiver heltal.
+Goddag.
+    Lad C være et heltal.
+    Sæt C til kald LægSammen sand , 10.
+    Kald Print C.
+    Tilbagegiv 0.
+Farvel.
+
+Offentlig Funktion LægSammen tager A som heltal, tager B som heltal, tilbagegiver heltal.
+Goddag.
+    Tilbagegiv A plus B.
+Farvel.
+────────────────────────────────────────────────────────────────
+Incompatibles types in argument 1.
+────────────────────────────────────────────────────────────────
+
+════════════════════════════════════════════════════════════════
+err type check arguments 2
+────────────────────────────────────────────────────────────────
+Offentlig Funktion Hovedsagelig tilbagegiver heltal.
+Goddag.
+    Lad C være et heltal.
+    Sæt C til kald LægSammen 10 , 10,0 .
+    Kald Print C.
+    Tilbagegiv 0.
+Farvel.
+
+Offentlig Funktion LægSammen
+    tager A som heltal,
+    tager B som heltal,
+    tilbagegiver heltal.
+Goddag.
+    Tilbagegiv A plus B.
+Farvel.
+────────────────────────────────────────────────────────────────
+Incompatibles types in argument 2.
+────────────────────────────────────────────────────────────────
 
 
 
@@ -258,12 +323,12 @@ Incompatibles types in binary operator.
 ════════════════════════════════════════════════════════════════
 err assign bool to int
 ────────────────────────────────────────────────────────────────
-Offentlig Funktion Hovedsagelig returnerer heltal.
+Offentlig Funktion Hovedsagelig tilbagegiver heltal.
 Goddag.
     Lad A være et heltal.
     Sæt A til 99.
     Sæt A til sand.
-    Return 0.
+    Tilbagegiv 0.
 Farvel.
 ────────────────────────────────────────────────────────────────
 Incompatible types
@@ -272,12 +337,12 @@ Incompatible types
 ════════════════════════════════════════════════════════════════
 err assign int to bool.
 ────────────────────────────────────────────────────────────────
-Offentlig Funktion Hovedsagelig returnerer heltal.
+Offentlig Funktion Hovedsagelig tilbagegiver heltal.
 Goddag.
     Lad A være en påstand.
     Sæt A til falsk.
     Sæt A til 99.
-    Return 0.
+    Tilbagegiv 0.
 Farvel.
 ────────────────────────────────────────────────────────────────
 Incompatible types
@@ -286,16 +351,40 @@ Incompatible types
 ════════════════════════════════════════════════════════════════
 err if condition
 ────────────────────────────────────────────────────────────────
-Offentlig Funktion Hovedsagelig returnerer heltal.
+Offentlig Funktion Hovedsagelig tilbagegiver heltal.
 Goddag.
     Hvis 1 plus 1.
     Goddag.
         Kald Print 1.
     Farvel.
 
-    Return 0.
+    Tilbagegiv 0.
 Farvel.
 ────────────────────────────────────────────────────────────────
 Condition in if statement does not evalutate to a boolean.
 ────────────────────────────────────────────────────────────────
 
+
+════════════════════════════════════════════════════════════════
+stack cleanup after function call
+────────────────────────────────────────────────────────────────
+Offentlig Funktion Hovedsagelig tilbagegiver heltal.
+Goddag.
+    Bemærk IgnorerReturnVærdi pushed its return value to the stack,
+    Bemærk but no assignment expression pops it off with a 'stl' instruction.
+    Bemærk The compiler should there emit 'pop' to clean up the stack efter IgnorerReturnVærdi.
+    Bemærk TODO: Someway to verify data-stack integrity at runtime.
+
+    Kald IgnorerReturnVærdi.
+    Kald Print 1.
+    Tilbagegiv 0.
+Farvel.
+
+Offentlig Funktion IgnorerReturnVærdi tilbagegiver heltal.
+Goddag.
+    Tilbagegiv 20.
+Farvel.
+
+────────────────────────────────────────────────────────────────
+1
+────────────────────────────────────────────────────────────────
