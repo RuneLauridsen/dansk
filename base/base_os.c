@@ -35,14 +35,10 @@ static str os_read_entire_file(str file_name, arena *arena) {
 
                 ret.count         = bytes_read;
                 ret.v[bytes_read] = '\0';
-            } else {
-                println("ReadFile failed (%).", (u32)GetLastError());
             }
         }
 
         CloseHandle(file);
-    } else {
-        println("CreateFileW failed (%).", (u32)GetLastError());
     }
 
     return ret;
@@ -65,13 +61,9 @@ static bool os_write_entire_file(str file_name, str data, arena *arena) {
             if (bytes_written == (DWORD)data.len) {
                 ret = true;
             }
-        } else {
-            println("WriteFile failed (%).", (u32)GetLastError());
         }
 
         CloseHandle(file);
-    } else {
-        println("CreateFileW failed (%).", (u32)GetLastError());
     }
 
     return ret;
@@ -154,7 +146,7 @@ static bool os_file_iter_next(os_file_iter *iter, os_file_info *out, arena *aren
         wstr wpath = { 0 };
         wpath.v = iter->find_data.cFileName;
 
-        for_n (i32, i, countof(iter->find_data.cFileName)) {
+        for_n (u64, i, countof(iter->find_data.cFileName)) {
             if (iter->find_data.cFileName[i] == '\0') {
                 break;
             }
@@ -178,9 +170,7 @@ static void os_file_iter_end(os_file_iter *iter) {
     }
 }
 
-static os_file_infos os_get_files_in_path(str path, i32 max, arena *arena) {
-    if (max == 0) max = 0xffff'ffff;
-
+static os_file_infos os_get_files_from_path(str path, u64 max, arena *arena) {
     os_file_infos ret = { 0 };
     os_file_info info;
     os_file_iter iter;

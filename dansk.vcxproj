@@ -173,7 +173,6 @@
   <ItemGroup>
     <None Include="tests\basic.dk.test" />
     <None Include="tests\tests.dk" />
-    <None Include="tests\test_typecheck.dk" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

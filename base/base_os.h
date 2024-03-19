@@ -30,22 +30,30 @@ typedef struct os_file_infos os_file_infos;
 struct os_file_infos {
     os_file_info *first;
     os_file_info *last;
-    i32 count;
+    u64 count;
 };
 
 typedef struct os_file_iter os_file_iter;
 struct os_file_iter {
     HANDLE find_handle;
     WIN32_FIND_DATAW find_data;
-    i32 count;
+    u64 count;
 };
 
 static void os_file_iter_begin(os_file_iter *iter, str path, arena *temp);
 static bool os_file_iter_next(os_file_iter *iter, os_file_info *out, arena *arena);
 static void os_file_iter_end(os_file_iter *iter);
-static os_file_infos os_get_files_in_path(str path, i32 max, arena *arena);
+
+////////////////////////////////////////////////////////////////
+//
+//
+// Directories
+//
+//
+////////////////////////////////////////////////////////////////
 
 static bool os_is_path_seperator(u32 c);
+static os_file_infos os_get_files_from_path(str path, u64 max, arena *arena);
 
 ////////////////////////////////////////////////////////////////
 //

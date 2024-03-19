@@ -93,6 +93,9 @@
     <ClInclude Include="dk.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="dk_tests.c">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.c">
@@ -100,10 +103,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="eksempel.dk" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="cpp.hint" />
     <None Include="tests\basic.dk.test" />
     <None Include="tests\tests.dk" />
   </ItemGroup>
