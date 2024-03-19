@@ -663,12 +663,35 @@ static dk_symbol *dk_check_expr(dk_checker *checker, dk_ast_expr *expr) {
             dk_symbol *callee = dk_check_symbol(checker, expr->call.ident);
             ret = callee->type;
 
-            // TODO(rune): Check wether args matches cellee's signuatre.
-            for_list (dk_ast_expr_arg, arg, expr->call.args) {
-                dk_check_expr(checker, arg->expr);
-            }
+            if (callee->id < 0xdeadbeef) {
+                assert(callee->ast->kind == DK_AST_SYMBOL_KIND_PROC);
+                dk_ast_proc *proc = &callee->ast->proc;
 
-            //assert(false && "Not implemented.");
+                if (expr->call.args.count == callee->ast->proc.args.count) {
+                    dk_ast_expr_arg *expr_arg = expr->call.args.first;
+                    dk_ast_proc_arg *proc_arg = proc->args.first;
+
+                    for_n (u64, i, expr->call.args.count) {
+                        dk_symbol *expr_arg_type = dk_check_expr(checker, expr_arg->expr)->type;
+                        dk_symbol *proc_arg_type = proc_arg->symbol->type;
+
+                        if (expr_arg_type != proc_arg_type) {
+                            dk_report_err(dk_global_err, dk_tprint("Incompatibles types in argument %.", i + 1)); // TODO(rune): Better error message.
+                        }
+
+                        expr_arg = expr_arg->next;
+                        proc_arg = proc_arg->next;
+                    }
+
+                } else {
+                    dk_report_err(dk_global_err, str("Incorrect number of arguments.")); // TODO(rune): Better error message.
+                }
+            } else {
+                // TODO(rune): Actual typecheck builtins.
+                for_list (dk_ast_expr_arg, arg, expr->call.args) {
+                    dk_check_expr(checker, arg->expr);
+                }
+            }
         } break;
 
         case DK_AST_EXPR_KIND_UNARY: {
@@ -728,26 +751,9 @@ static dk_symbol *dk_check_expr(dk_checker *checker, dk_ast_expr *expr) {
     return ret;
 }
 
-static void dk_check_proc(dk_checker *checker, dk_symbol *symbol) {
-    dk_ast_proc *proc = &symbol->ast->proc;
-    proc->type = dk_check_symbol(checker, proc->return_type_name);
-
-    u64 local_size = 0;
-
-    //- Arguments.
-    for_list (dk_ast_proc_arg, arg, proc->args) {
-        dk_symbol *arg_symbol = dk_symbol_table_add(&checker->local_symbols, arg->name);
-        arg_symbol->kind = DK_SYMBOL_KIND_LOCAL;
-        arg_symbol->id   = (u32)local_size; // TODO(rune): Cast?
-        arg_symbol->type = dk_check_symbol(checker, arg->type_name);
-
-        local_size += arg_symbol->type->size;
-
-        arg->symbol = arg_symbol;
-    }
-
+static void dk_check_stmts(dk_checker *checker, dk_ast_stmts stmts, dk_symbol *return_type) {
     //- Statement.
-    for_list (dk_ast_stmt, stmt, proc->stmts) {
+    for_list (dk_ast_stmt, stmt, stmts) {
         if (dk_global_err->err_list.count) break;
 
         switch (stmt->kind) {
@@ -757,10 +763,10 @@ static void dk_check_proc(dk_checker *checker, dk_symbol *symbol) {
 
                 dk_symbol *local = dk_symbol_table_add(&checker->local_symbols, decl->ident);
                 local->kind = DK_SYMBOL_KIND_LOCAL;
-                local->id   = (u32)local_size; // TODO(rune): Cast?
+                local->id   = (u32)checker->local_size; // TODO(rune): Cast?
                 local->type = type;
 
-                local_size += type->size;
+                checker->local_size += type->size;
             } break;
 
             case DK_AST_STMT_KIND_EXPR: {
@@ -783,7 +789,7 @@ static void dk_check_proc(dk_checker *checker, dk_symbol *symbol) {
                 dk_symbol *sym = dk_check_expr(checker, stmt->return_.expr);
                 dk_symbol *type = sym->type;
 
-                assert(type == proc->type); // TODO(rune): Better error reporting.
+                assert(type == return_type); // TODO(rune): Better error reporting.
             } break;
 
             case DK_AST_STMT_KIND_IF: {
@@ -798,6 +804,28 @@ static void dk_check_proc(dk_checker *checker, dk_symbol *symbol) {
             } break;
         }
     }
+}
+
+static void dk_check_proc(dk_checker *checker, dk_symbol *symbol) {
+    dk_ast_proc *proc = &symbol->ast->proc;
+    proc->type = dk_check_symbol(checker, proc->return_type_name);
+
+    u64 local_size = 0;
+
+    //- Arguments.
+    for_list (dk_ast_proc_arg, arg, proc->args) {
+        dk_symbol *arg_symbol = dk_symbol_table_add(&checker->local_symbols, arg->name);
+        arg_symbol->kind = DK_SYMBOL_KIND_LOCAL;
+        arg_symbol->id   = (u32)local_size; // TODO(rune): Cast?
+        arg_symbol->type = dk_check_symbol(checker, arg->type_name);
+
+        local_size += arg_symbol->type->size;
+
+        arg->symbol = arg_symbol;
+    }
+
+    // NOTE(rune): Statements are checked in a later pass, since we need to know
+    // the signature of all procs, before we kan check statements.
 }
 
 static dk_symbol_table dk_check_ast(dk_ast ast) {
@@ -837,6 +865,8 @@ static dk_symbol_table dk_check_ast(dk_ast ast) {
                 sym->id = ++checker.proc_id_counter;
                 sym->kind = DK_SYMBOL_KIND_PROC;
                 sym->ast = ast_symbol;
+
+                dk_check_proc(&checker, sym);
             } break;
 
             default: {
@@ -849,7 +879,8 @@ static dk_symbol_table dk_check_ast(dk_ast ast) {
         if (symbol->builtin == false) {
             switch (symbol->kind) {
                 case DK_SYMBOL_KIND_PROC: {
-                    dk_check_proc(&checker, symbol);
+                    dk_ast_proc *proc = &symbol->ast->proc;
+                    dk_check_stmts(&checker, proc->stmts, proc->type);
                 } break;
 
                 case DK_SYMBOL_KIND_TYPE: {

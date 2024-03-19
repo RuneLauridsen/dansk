@@ -565,6 +565,8 @@ struct dk_checker {
 
     u32 proc_id_counter;
     u32 type_id_counter;
+
+    u64 local_size;
 };
 
 //- High level api.
@@ -573,6 +575,7 @@ static dk_symbol_table      dk_check_ast(dk_ast ast);
 //- Checker functions.
 static dk_symbol *          dk_check_symbol(dk_checker *checker, str name);
 static dk_symbol *          dk_check_expr(dk_checker *checker, dk_ast_expr *expr);
+static void                 dk_check_stmts(dk_checker *checker, dk_ast_stmts stmts, dk_symbol *return_type);
 static void                 dk_check_proc(dk_checker *checker, dk_symbol *symbol);
 
 ////////////////////////////////////////////////////////////////

@@ -276,3 +276,45 @@ Farvel.
 
 
 
+════════════════════════════════════════════════════════════════
+err type check arguments 1
+────────────────────────────────────────────────────────────────
+Offentlig Funktion Hovedsagelig tilbagegiver heltal.
+Goddag.
+    Lad C være et heltal. 
+    Sæt C til kald LægSammen sand , 10.
+    Kald Print C.
+    Tilbagegiv 0.
+Farvel.
+
+Offentlig Funktion LægSammen tager A som heltal, tager B som heltal, tilbagegiver heltal.
+Goddag.
+    Tilbagegiv A plus B.
+Farvel.
+────────────────────────────────────────────────────────────────
+Incompatibles types in argument 1.
+────────────────────────────────────────────────────────────────
+
+════════════════════════════════════════════════════════════════
+err type check arguments 2
+────────────────────────────────────────────────────────────────
+Offentlig Funktion Hovedsagelig tilbagegiver heltal.
+Goddag.
+    Lad C være et heltal. 
+    Sæt C til kald LægSammen 10 , 10,0 .
+    Kald Print C.
+    Tilbagegiv 0.
+Farvel.
+
+Offentlig Funktion LægSammen 
+    tager A som heltal, 
+    tager B som heltal, 
+    tilbagegiver heltal.
+Goddag.
+    Tilbagegiv A plus B.
+Farvel.
+────────────────────────────────────────────────────────────────
+Incompatibles types in argument 2.
+────────────────────────────────────────────────────────────────
+
+
