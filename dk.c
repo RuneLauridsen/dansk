@@ -163,6 +163,13 @@ static bool dk_next_token(dk_tokenizer *t, dk_token *token) {
         if (kind == 0) {
             kind = DK_TOKEN_KIND_IDENT;
         }
+
+        //- Continue comment until newline.
+        if (kind == DK_TOKEN_KIND_COMMENT) {
+            while (t->peek0 != '\n') {
+                dk_tokenizer_eat(t);
+            }
+        }
     }
 
     //- Number token
@@ -238,12 +245,7 @@ static dk_token dk_eat_token(dk_parser *p) {
 
     // Skip comments.
     while (p->peek.kind == DK_TOKEN_KIND_COMMENT) {
-        while (dk_next_token(&p->tokenizer, &p->peek)) {
-            if (p->peek.kind == DK_TOKEN_KIND_DOT) {
-                dk_next_token(&p->tokenizer, &p->peek);
-                break;
-            }
-        }
+        dk_next_token(&p->tokenizer, &p->peek);
     }
 
 #if DK_DEBUG_PRINT_LEX
@@ -1136,6 +1138,9 @@ static void dk_emit_stmts(dk_emitter *e, dk_ast_stmts stmts, dk_compiler_local_l
 
             case DK_AST_STMT_KIND_EXPR: {
                 dk_emit_expr(e, stmt->expr, locals);
+
+                // NOTE(rune): Stack cleanup if expr value wasn't popped by an assignment.
+                dk_emit_inst1(e, DK_BC_OPCODE_POP);
             } break;
 
             case DK_AST_STMT_KIND_ASSIGN: {
@@ -1348,7 +1353,7 @@ static str dk_run_program(dk_program program, arena *output_arena) {
             } break;
 
             case DK_BC_OPCODE_POP: {
-                assert(false && "Not implemented.");
+                dk_buffer_pop_u64(&data_stack);
             } break;
 
             case DK_BC_OPCODE_STL: {
@@ -1395,9 +1400,11 @@ static str dk_run_program(dk_program program, arena *output_arena) {
                 if (id == 0xdeadbeef) {
                     u64 a = dk_buffer_pop_u64(&data_stack);
                     str_list_push_fmt(&output_list, output_arena, "%\n", a);
+                    dk_buffer_push_u64(&data_stack, 0); // TODO(rune): What should print return?
                 } else if (id == 0xdeadbeef + 1) {
                     u64 a = dk_buffer_pop_u64(&data_stack);
                     str_list_push_fmt(&output_list, output_arena, "%\n", u64_as_f64(a));
+                    dk_buffer_push_u64(&data_stack, 0); // TODO(rune): What should print return?
                 } else {
                     // TODO(rune): Better symbol lookup.
                     dk_bc_symbol *symbol = null;

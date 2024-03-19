@@ -318,3 +318,29 @@ Incompatibles types in argument 2.
 ────────────────────────────────────────────────────────────────
 
 
+
+
+
+════════════════════════════════════════════════════════════════
+stack cleanup after function call
+────────────────────────────────────────────────────────────────
+Offentlig Funktion Hovedsagelig tilbagegiver heltal.
+Goddag.
+    Bemærk IgnorerReturnVærdi pushed its return value to the stack, 
+    Bemærk but no assignment expression pops it off with a 'stl' instruction.
+    Bemærk The compiler should there emit 'pop' to clean up the stack efter IgnorerReturnVærdi.
+    Bemærk TODO: Someway to verify data-stack integrity at runtime.
+           
+    Kald IgnorerReturnVærdi.
+    Kald Print 1.
+    Tilbagegiv 0.
+Farvel.
+
+Offentlig Funktion IgnorerReturnVærdi tilbagegiver heltal.
+Goddag.
+    Tilbagegiv 20.
+Farvel.
+    
+────────────────────────────────────────────────────────────────
+1
+────────────────────────────────────────────────────────────────
