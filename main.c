@@ -73,6 +73,12 @@ static bool dk_cmdline_read_file(dk_cmdline *cmd, str *file_name, str *file_data
 }
 
 int main(int argc, char **argv) {
+#if 0
+    arena a = { 0 };
+    dk_run_test_file_filtered(str("W:\\dansk\\tests\\tests.dk"), str(""), &a);
+    return 0;
+#endif
+
     static char *usage =
         "Usage:                                                                    \n"
         "    dansk help                    Print this message                      \n"

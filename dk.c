@@ -799,6 +799,9 @@ static void dk_check_stmts(dk_checker *checker, dk_ast_stmts stmts, dk_symbol *r
                 if (expr->type->type_kind != DK_TYPE_KIND_BOOL) {
                     dk_report_err(dk_global_err, str("Condition in if statement does not evalutate to a boolean.")); // TODO(rune): Better error message.
                 }
+
+                dk_check_stmts(checker, stmt->if_.then, return_type);
+                dk_check_stmts(checker, stmt->if_.else_, return_type);
             } break;
 
             default: {
@@ -850,6 +853,7 @@ static dk_symbol_table dk_check_ast(dk_ast ast) {
         proc->id = 0xdeadbeef;
         proc->kind = DK_SYMBOL_KIND_PROC;
         proc->builtin = true;
+        proc->type = dk_check_symbol(&checker, str("heltal"));
     }
 
     // TODO(rune): Better system for built-in procs.
@@ -858,6 +862,7 @@ static dk_symbol_table dk_check_ast(dk_ast ast) {
         proc->id = 0xdeadbeef + 1;
         proc->kind = DK_SYMBOL_KIND_PROC;
         proc->builtin = true;
+        proc->type = dk_check_symbol(&checker, str("heltal"));
     }
 
     for_list (dk_ast_symbol, ast_symbol, ast.symbols) {
@@ -1140,7 +1145,9 @@ static void dk_emit_stmts(dk_emitter *e, dk_ast_stmts stmts, dk_compiler_local_l
                 dk_emit_expr(e, stmt->expr, locals);
 
                 // NOTE(rune): Stack cleanup if expr value wasn't popped by an assignment.
-                dk_emit_inst1(e, DK_BC_OPCODE_POP);
+                if (stmt->expr->sym->type->type_kind != DK_TYPE_KIND_VOID) {
+                    dk_emit_inst1(e, DK_BC_OPCODE_POP);
+                }
             } break;
 
             case DK_AST_STMT_KIND_ASSIGN: {
@@ -1206,11 +1213,6 @@ static void dk_emit_stmts(dk_emitter *e, dk_ast_stmts stmts, dk_compiler_local_l
                 dk_emit_stmts(e, stmt->if_.else_, locals);
 
                 *end_pos = e->body.size;
-
-
-
-
-
             } break;
 
             default: {
@@ -1456,6 +1458,10 @@ static str dk_run_program(dk_program program, arena *output_arena) {
     }
 
 exit:
+    if (data_stack.size != 8) {
+        str_list_push(&output_list, output_arena, dk_tprint("Invalid stack size on exit. Was % but expected %.", data_stack.size, 8));
+    }
+
     str output = str_list_join(&output_list, output_arena, str(""));
     return output;
 }
