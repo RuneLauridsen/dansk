@@ -762,6 +762,9 @@ static void dk_check_stmts(dk_checker *checker, dk_ast_stmts stmts, dk_symbol *r
             case DK_AST_STMT_KIND_DECL: {
                 dk_ast_decl *decl = &stmt->decl;
                 dk_symbol *type = dk_check_symbol(checker, decl->type_name);
+                if (type->type_kind == DK_TYPE_KIND_VOID) {
+                    dk_report_err(dk_global_err, str("Cannot declare local as void"));
+                }
 
                 dk_symbol *local = dk_symbol_table_add(&checker->local_symbols, decl->ident);
                 local->kind = DK_SYMBOL_KIND_LOCAL;
@@ -783,7 +786,7 @@ static void dk_check_stmts(dk_checker *checker, dk_ast_stmts stmts, dk_symbol *r
 
                 dk_symbol *rsym = dk_check_expr(checker, assign->right);
                 if (lsym->type != rsym->type) {
-                    dk_report_err(dk_global_err, str("Incompatible types")); // TODO(rune): Better error reporting.
+                    dk_report_err(dk_global_err, str("Incompatible types")); // TODO(rune): Better error message.
                 }
             } break;
 
@@ -791,7 +794,9 @@ static void dk_check_stmts(dk_checker *checker, dk_ast_stmts stmts, dk_symbol *r
                 dk_symbol *sym = dk_check_expr(checker, stmt->return_.expr);
                 dk_symbol *type = sym->type;
 
-                assert(type == return_type); // TODO(rune): Better error reporting.
+                if (type != return_type) {
+                    dk_report_err(dk_global_err, str("Incompatible return type")); // TODO(rune): Better error message.
+                }
             } break;
 
             case DK_AST_STMT_KIND_IF: {

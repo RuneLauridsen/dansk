@@ -410,3 +410,60 @@ Farvel.
 ────────────────────────────────────────────────────────────────
 29
 ────────────────────────────────────────────────────────────────
+
+
+
+════════════════════════════════════════════════════════════════
+err assign void
+────────────────────────────────────────────────────────────────
+Offentlig Funktion Hovedsagelig tilbagegiver heltal.
+Goddag.
+    Lad A være en flyder.
+    Sæt A til kald GørIngenting.
+    Tilbagegiv 0.
+Farvel.
+
+Offentlig Funktion GørIngenting tilbagegiver tomrum.
+Goddag.
+    Kald Print 29.
+    Tilbagegiv 10,0.
+Farvel.
+
+────────────────────────────────────────────────────────────────
+Incompatible types
+────────────────────────────────────────────────────────────────
+
+
+════════════════════════════════════════════════════════════════
+err invalid return type
+────────────────────────────────────────────────────────────────
+Offentlig Funktion Hovedsagelig tilbagegiver heltal.
+Goddag.
+    Kald GørIngenting.
+    Tilbagegiv 0.
+Farvel.
+
+Offentlig Funktion GørIngenting tilbagegiver tomrum.
+Goddag.
+    Kald Print 29.
+    Tilbagegiv 10,0.
+Farvel.
+
+────────────────────────────────────────────────────────────────
+Incompatible return type
+────────────────────────────────────────────────────────────────
+
+
+
+
+════════════════════════════════════════════════════════════════
+err void local
+────────────────────────────────────────────────────────────────
+Offentlig Funktion Hovedsagelig tilbagegiver heltal.
+Goddag.
+    Lad A være et tomrum.
+    Tilbagegiv 0.
+Farvel.
+────────────────────────────────────────────────────────────────
+Cannot declare local as void
+────────────────────────────────────────────────────────────────
