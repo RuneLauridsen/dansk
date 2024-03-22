@@ -361,7 +361,7 @@ Goddag.
     Tilbagegiv 0.
 Farvel.
 ────────────────────────────────────────────────────────────────
-Condition in if statement does not evalutate to a boolean.
+Condition in if statement does not evalutate to a boolean
 ────────────────────────────────────────────────────────────────
 
 
@@ -495,5 +495,56 @@ Farvel.
 1
 0
 0
+────────────────────────────────────────────────────────────────
+
+
+
+
+
+════════════════════════════════════════════════════════════════
+while loop
+────────────────────────────────────────────────────────────────
+Offentlig Funktion Hovedsagelig tilbagegiver heltal.
+Goddag.
+    Lad A være et heltal.
+    Sæt A til 5.
+    
+    Sålænge A størreend 1.
+    Goddag.
+        Sæt A til A minus 1.
+        Kald Print A.
+    Farvel.
+    
+    Tilbagegiv 0.
+Farvel.
+────────────────────────────────────────────────────────────────
+4
+3
+2
+1
+────────────────────────────────────────────────────────────────
+
+
+
+
+
+════════════════════════════════════════════════════════════════
+err while loop check condition
+────────────────────────────────────────────────────────────────
+Offentlig Funktion Hovedsagelig tilbagegiver heltal.
+Goddag.
+    Lad A være et heltal.
+    Sæt A til 5.
+    
+    Sålænge A plus 2.
+    Goddag.
+        Sæt A til A minus 1.
+        Kald Print A.
+    Farvel.
+    
+    Tilbagegiv 0.
+Farvel.
+────────────────────────────────────────────────────────────────
+Condition in while statement does not evalutate to a boolean
 ────────────────────────────────────────────────────────────────
 

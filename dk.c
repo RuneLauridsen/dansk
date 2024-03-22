@@ -455,6 +455,15 @@ static dk_ast_stmt *dk_parse_stmt(dk_parser *p) {
         }
     }
 
+    //- While statement.
+    else if (dk_eat_token_kind_maybe(p, DK_TOKEN_KIND_WHILE)) {
+        stmt->kind = DK_AST_STMT_KIND_WHILE;
+        stmt->while_.expr = dk_parse_expr(p, 0);
+        dk_eat_token_kind(p, DK_TOKEN_KIND_DOT);
+        stmt->while_.body = dk_parse_stmts(p);
+
+    }
+
     //- Expression statement.
     else {
         dk_ast_expr *expr = dk_parse_expr(p, 0);
@@ -722,12 +731,18 @@ static dk_symbol *dk_check_expr(dk_checker *checker, dk_ast_expr *expr) {
                 case DK_TOKEN_KIND_ADD:
                 case DK_TOKEN_KIND_SUB:
                 case DK_TOKEN_KIND_MUL:
-                case DK_TOKEN_KIND_DIV:
-                case DK_TOKEN_KIND_LESS:
-                case DK_TOKEN_KIND_GREATER: {
+                case DK_TOKEN_KIND_DIV: {
                     if (lhs_type != rhs_type) dk_report_err(dk_global_err, str("Incompatibles types in binary operator.")); // TODO(rune): Better error message.
 
                     ret = lhs_type;
+                } break;
+
+
+                case DK_TOKEN_KIND_LESS:
+                case DK_TOKEN_KIND_GREATER: {
+                    if (lhs_type != rhs_type) dk_report_err(dk_global_err, str("Incompatibles types in comparison operator.")); // TODO(rune): Better error message.
+
+                    ret = dk_check_symbol(checker, str("påstand"));
                 } break;
 
                 case DK_TOKEN_KIND_CALL: {
@@ -807,12 +822,22 @@ static void dk_check_stmts(dk_checker *checker, dk_ast_stmts stmts, dk_symbol *r
             case DK_AST_STMT_KIND_IF: {
                 dk_symbol *expr = dk_check_expr(checker, stmt->if_.expr);
                 if (expr->type->type_kind != DK_TYPE_KIND_BOOL) {
-                    dk_report_err(dk_global_err, str("Condition in if statement does not evalutate to a boolean.")); // TODO(rune): Better error message.
+                    dk_report_err(dk_global_err, str("Condition in if statement does not evalutate to a boolean")); // TODO(rune): Better error message.
                 }
 
                 dk_check_stmts(checker, stmt->if_.then, return_type);
                 dk_check_stmts(checker, stmt->if_.else_, return_type);
             } break;
+
+            case DK_AST_STMT_KIND_WHILE: {
+                dk_symbol *expr = dk_check_expr(checker, stmt->while_.expr);
+                if (expr->type->type_kind != DK_TYPE_KIND_BOOL) {
+                    dk_report_err(dk_global_err, str("Condition in while statement does not evalutate to a boolean")); // TODO(rune): Better error message.
+                }
+
+                dk_check_stmts(checker, stmt->while_.body, return_type);
+            } break;
+
 
             default: {
                 assert(false && "Invalid expression kind");
@@ -1228,6 +1253,29 @@ static void dk_emit_stmts(dk_emitter *e, dk_ast_stmts stmts, dk_compiler_local_l
                 *end_pos = e->body.size;
             } break;
 
+            case DK_AST_STMT_KIND_WHILE: {
+                u64 start_pos = e->body.size;
+                dk_emit_expr(e, stmt->while_.expr, locals);
+                dk_emit_inst1(e, DK_BC_OPCODE_NOT);
+
+                // TODO(rune): This whole business is a hack.
+
+
+                dk_bc_inst_prefix prefix = {
+                    .opcode = DK_BC_OPCODE_BR,
+                    .operand_size = 3, // NOTE(rune): 64-bits
+                };
+                dk_emit_u8(e, prefix.u8);
+                u64 *end_pos = dk_emit_u64(e, U64_MAX);
+
+                dk_emit_stmts(e, stmt->while_.body, locals);
+
+                dk_emit_inst2(e, DK_BC_OPCODE_LDI, 1); // TODO(rune): Unconditional jump opcode.
+                dk_emit_inst2(e, DK_BC_OPCODE_BR, start_pos);
+
+                *end_pos = e->body.size;
+            } break;
+
             default: {
                 assert(false && "Invalid stmt kind.");
             } break;
@@ -1378,8 +1426,8 @@ static str dk_run_program(dk_program program, arena *output_arena) {
 
 #define DK_BC_BINOP_IMPL(calc)                          \
             do {                                        \
-                u64 a = dk_buffer_pop_u64(&data_stack); \
                 u64 b = dk_buffer_pop_u64(&data_stack); \
+                u64 a = dk_buffer_pop_u64(&data_stack); \
                 u64 c = calc;                           \
                 dk_buffer_push_u64(&data_stack, c);     \
             } while (0)
@@ -1400,8 +1448,13 @@ static str dk_run_program(dk_program program, arena *output_arena) {
             case DK_BC_OPCODE_AND:  DK_BC_BINOP_IMPL(a && b); break;
             case DK_BC_OPCODE_OR:   DK_BC_BINOP_IMPL(a || b); break;
 
-            case DK_BC_OPCODE_LT:   DK_BC_BINOP_IMPL(a > b); break;
-            case DK_BC_OPCODE_GT:   DK_BC_BINOP_IMPL(a < b); break;
+            case DK_BC_OPCODE_LT:   DK_BC_BINOP_IMPL(a < b); break;
+            case DK_BC_OPCODE_GT:   do {
+                u64 b = dk_buffer_pop_u64(&data_stack);
+                u64 a = dk_buffer_pop_u64(&data_stack);
+                u64 c = a > b; dk_buffer_push_u64(&data_stack, c);
+                printf("");
+            } while (0); break;
 
 #undef DK_BC_BINOP_IMPL
 
@@ -1628,6 +1681,18 @@ static void dk_print_ast_stmt(dk_ast_stmt *stmt, u64 level) {
                 println("else");
                 dk_print_ast_stmts(stmt->if_.then, level + 2);
             }
+        } break;
+
+        case DK_AST_STMT_KIND_WHILE: {
+            println("stmt-while");
+
+            dk_print_ast_level(level + 1);
+            println("expr");
+            dk_print_ast_expr(stmt->while_.expr, level + 2);
+
+            dk_print_ast_level(level + 1);
+            println("body");
+            dk_print_ast_stmts(stmt->while_.body, level + 2);
         } break;
 
 

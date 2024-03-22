@@ -97,7 +97,7 @@ typedef enum dk_token_kind {
     DK_TOKEN_KIND_TRUE,
     DK_TOKEN_KIND_IF,
     DK_TOKEN_KIND_ELSE,
-    DK_TOKEN_KIND_KEYWORD,
+    DK_TOKEN_KIND_WHILE,
     DK_TOKEN_KIND_ARGUMENT,
 
     DK_TOKEN_KIND_COUNT,
@@ -136,6 +136,7 @@ static readonly dk_token_spelling dk_token_spellings[] = {
     { DK_TOKEN_KIND_RETURN,         STR("tilbagegiver"), },
     { DK_TOKEN_KIND_IF,             STR("hvis"),         },
     { DK_TOKEN_KIND_ELSE,           STR("ellers"),       },
+    { DK_TOKEN_KIND_WHILE,          STR("sålænge"),      },
     { DK_TOKEN_KIND_ARGUMENT,       STR("tager"),        },
                                                          
     { DK_TOKEN_KIND_ADD,            STR("plus"),         },
@@ -275,6 +276,7 @@ typedef enum dk_ast_stmt_kind {
     DK_AST_STMT_KIND_ASSIGN,
     DK_AST_STMT_KIND_RETURN,
     DK_AST_STMT_KIND_IF,
+    DK_AST_STMT_KIND_WHILE,
 
     DK_AST_STMT_KIND_COUNT,
 } dk_ast_stmt_kind;
@@ -310,6 +312,12 @@ struct dk_ast_if {
     dk_ast_stmts else_;
 };
 
+typedef struct dk_ast_while dk_ast_while;
+struct dk_ast_while {
+    dk_ast_expr *expr;
+    dk_ast_stmts body;
+};
+
 typedef struct dk_ast_stmt dk_ast_stmt;
 struct dk_ast_stmt {
     dk_ast_stmt_kind kind;
@@ -319,6 +327,7 @@ struct dk_ast_stmt {
         dk_ast_assign assign;
         dk_ast_return return_;
         dk_ast_if if_;
+        dk_ast_while while_;
     };
     dk_ast_stmt *next;
 };
