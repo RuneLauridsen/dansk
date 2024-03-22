@@ -74,8 +74,9 @@ static bool dk_cmdline_read_file(dk_cmdline *cmd, str *file_name, str *file_data
 
 int main(int argc, char **argv) {
 #if 0
+    SetConsoleOutputCP(65001); // utf8
     arena a = { 0 };
-    dk_run_test_file_filtered(str("W:\\dansk\\tests\\tests.dk"), str(""), &a);
+    dk_run_test_file_filtered(str("W:\\dansk\\tests\\tests.dk"), str("comparison"), &a);
     return 0;
 #endif
 

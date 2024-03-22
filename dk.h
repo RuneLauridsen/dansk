@@ -65,6 +65,8 @@ typedef enum dk_token_kind {
     DK_TOKEN_KIND_DIV,
     DK_TOKEN_KIND_AND,
     DK_TOKEN_KIND_OR,
+    DK_TOKEN_KIND_LESS,
+    DK_TOKEN_KIND_GREATER,
 
     //- Punctuation
     DK_TOKEN_KIND_DOT,
@@ -142,6 +144,8 @@ static readonly dk_token_spelling dk_token_spellings[] = {
     { DK_TOKEN_KIND_AND,            STR("og"),           },
     { DK_TOKEN_KIND_AND,            STR("samt"),         },
     { DK_TOKEN_KIND_OR,             STR("eller"),        },
+    { DK_TOKEN_KIND_LESS,           STR("mindreend"),    },
+    { DK_TOKEN_KIND_GREATER,        STR("størreend"),    },
                                                          
     { DK_TOKEN_KIND_FALSE,          STR("falsk"),        },
     { DK_TOKEN_KIND_FALSE,          STR("falskt"),       },
@@ -398,12 +402,18 @@ static readonly dk_operator_info dk_operator_infos_prefix[DK_TOKEN_KIND_COUNT] =
 };
 
 static readonly dk_operator_info dk_operator_infos[DK_TOKEN_KIND_COUNT] = {
-    [DK_TOKEN_KIND_OR] =   { DK_AST_EXPR_KIND_BINARY, 2, },
-    [DK_TOKEN_KIND_AND]  = { DK_AST_EXPR_KIND_BINARY, 3, },
-    [DK_TOKEN_KIND_ADD]  = { DK_AST_EXPR_KIND_BINARY, 4, },
-    [DK_TOKEN_KIND_SUB]  = { DK_AST_EXPR_KIND_BINARY, 4, },
-    [DK_TOKEN_KIND_MUL]  = { DK_AST_EXPR_KIND_BINARY, 5, },
-    [DK_TOKEN_KIND_DIV]  = { DK_AST_EXPR_KIND_BINARY, 5, },
+    [DK_TOKEN_KIND_LESS] =     { DK_AST_EXPR_KIND_BINARY, 2, },
+    [DK_TOKEN_KIND_GREATER] =  { DK_AST_EXPR_KIND_BINARY, 2, },
+
+    [DK_TOKEN_KIND_OR]   = { DK_AST_EXPR_KIND_BINARY, 3, },
+    [DK_TOKEN_KIND_AND]  = { DK_AST_EXPR_KIND_BINARY, 4, },
+    [DK_TOKEN_KIND_ADD]  = { DK_AST_EXPR_KIND_BINARY, 5, },
+    [DK_TOKEN_KIND_SUB]  = { DK_AST_EXPR_KIND_BINARY, 5, },
+    [DK_TOKEN_KIND_MUL]  = { DK_AST_EXPR_KIND_BINARY, 6, },
+    [DK_TOKEN_KIND_DIV]  = { DK_AST_EXPR_KIND_BINARY, 6, },
+
+    
+
     [DK_TOKEN_KIND_CALL] = { 0,                       10, },
 };
 
@@ -610,6 +620,9 @@ typedef enum dk_bc_opcode {
     DK_BC_OPCODE_OR,
     DK_BC_OPCODE_NOT,
 
+    DK_BC_OPCODE_GT,
+    DK_BC_OPCODE_LT,
+
     DK_BC_OPCODE_CALL,
     DK_BC_OPCODE_RET,
     DK_BC_OPCODE_BR,
@@ -668,6 +681,8 @@ static readonly dk_bc_opcode_info dk_bc_opcode_infos[DK_BC_OPCODE_COUNT] = {
     [DK_BC_OPCODE_AND]   = { STR("and"),                                 },
     [DK_BC_OPCODE_OR]    = { STR("or"),                                  },
     [DK_BC_OPCODE_NOT]   = { STR("not"),                                 },
+    [DK_BC_OPCODE_GT]    = { STR("gt"),                                  },
+    [DK_BC_OPCODE_LT]    = { STR("lt"),                                  },
 
     [DK_BC_OPCODE_CALL]  = { STR("call"),     DK_BC_OPERAND_KIND_SYM     },
     [DK_BC_OPCODE_RET]   = { STR("ret"),                                 },

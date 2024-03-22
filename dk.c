@@ -82,6 +82,8 @@ static str dk_token_kind_as_str(dk_token_kind a) {
         case DK_TOKEN_KIND_DIV:             return str("DK_TOKEN_KIND_DIV");
         case DK_TOKEN_KIND_AND:             return str("DK_TOKEN_KIND_AND");
         case DK_TOKEN_KIND_OR:              return str("DK_TOKEN_KIND_OR");
+        case DK_TOKEN_KIND_LESS:            return str("DK_TOKEN_KIND_LESS");
+        case DK_TOKEN_KIND_GREATER:         return str("DK_TOKEN_KIND_GREATER");
 
         case DK_TOKEN_KIND_DOT:             return str("DK_TOKEN_KIND_DOT");
         case DK_TOKEN_KIND_COMMA:           return str("DK_TOKEN_KIND_COMMA");
@@ -106,6 +108,7 @@ static str dk_token_kind_as_str(dk_token_kind a) {
         case DK_TOKEN_KIND_COMMENT:         return str("DK_TOKEN_KIND_COMMENT");
         case DK_TOKEN_KIND_IF:              return str("DK_TOKEN_KIND_IF");
         case DK_TOKEN_KIND_ELSE:            return str("DK_TOKEN_KIND_ELSE");
+        case DK_TOKEN_KIND_WHILE:           return str("DK_TOKEN_KIND_WHILE");
         case DK_TOKEN_KIND_ARGUMENT:        return str("DK_TOKEN_KIND_ARGUMENT");
 
         case DK_TOKEN_KIND_FALSE:           return str("DK_TOKEN_KIND_FALSE");
@@ -719,7 +722,9 @@ static dk_symbol *dk_check_expr(dk_checker *checker, dk_ast_expr *expr) {
                 case DK_TOKEN_KIND_ADD:
                 case DK_TOKEN_KIND_SUB:
                 case DK_TOKEN_KIND_MUL:
-                case DK_TOKEN_KIND_DIV: {
+                case DK_TOKEN_KIND_DIV:
+                case DK_TOKEN_KIND_LESS:
+                case DK_TOKEN_KIND_GREATER: {
                     if (lhs_type != rhs_type) dk_report_err(dk_global_err, str("Incompatibles types in binary operator.")); // TODO(rune): Better error message.
 
                     ret = lhs_type;
@@ -1108,8 +1113,11 @@ static void dk_emit_expr(dk_emitter *e, dk_ast_expr *expr, dk_compiler_local_lis
                 case DK_TOKEN_KIND_SUB: is_float ? dk_emit_inst1(e, DK_BC_OPCODE_FSUB) : dk_emit_inst1(e, DK_BC_OPCODE_SUB);  break;
                 case DK_TOKEN_KIND_MUL: is_float ? dk_emit_inst1(e, DK_BC_OPCODE_FMUL) : dk_emit_inst1(e, DK_BC_OPCODE_IMUL); break; // TODO(rune): Unsigned multiply.
                 case DK_TOKEN_KIND_DIV: is_float ? dk_emit_inst1(e, DK_BC_OPCODE_FDIV) : dk_emit_inst1(e, DK_BC_OPCODE_IDIV); break; // TODO(rune): Unsigned divide.
-                case DK_TOKEN_KIND_AND: dk_emit_inst1(e, DK_BC_OPCODE_AND);   break;
-                case DK_TOKEN_KIND_OR:  dk_emit_inst1(e, DK_BC_OPCODE_OR);    break;
+
+                case DK_TOKEN_KIND_AND:     dk_emit_inst1(e, DK_BC_OPCODE_AND);  break;
+                case DK_TOKEN_KIND_OR:      dk_emit_inst1(e, DK_BC_OPCODE_OR);   break;
+                case DK_TOKEN_KIND_LESS:    dk_emit_inst1(e, DK_BC_OPCODE_LT);   break;
+                case DK_TOKEN_KIND_GREATER: dk_emit_inst1(e, DK_BC_OPCODE_GT);   break;
 
                 default: {
                     assert(false && "Invalid operator.");
@@ -1391,6 +1399,9 @@ static str dk_run_program(dk_program program, arena *output_arena) {
 
             case DK_BC_OPCODE_AND:  DK_BC_BINOP_IMPL(a && b); break;
             case DK_BC_OPCODE_OR:   DK_BC_BINOP_IMPL(a || b); break;
+
+            case DK_BC_OPCODE_LT:   DK_BC_BINOP_IMPL(a > b); break;
+            case DK_BC_OPCODE_GT:   DK_BC_BINOP_IMPL(a < b); break;
 
 #undef DK_BC_BINOP_IMPL
 

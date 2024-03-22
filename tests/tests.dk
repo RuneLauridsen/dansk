@@ -467,3 +467,33 @@ Farvel.
 ────────────────────────────────────────────────────────────────
 Cannot declare local as void
 ────────────────────────────────────────────────────────────────
+
+
+
+
+
+
+════════════════════════════════════════════════════════════════
+comparison
+────────────────────────────────────────────────────────────────
+Offentlig Funktion Hovedsagelig tilbagegiver heltal.
+Goddag.
+    Kald Print 10 StørreEnd 20.
+    Kald Print 10 StørreEnd 10.
+    Kald Print 10 StørreEnd 9.
+    
+    Kald Print 10 MindreEnd 20.
+    Kald Print 10 MindreEnd 10.
+    Kald Print 10 MindreEnd 9.
+    
+    Tilbagegiv 0.
+Farvel.
+────────────────────────────────────────────────────────────────
+0
+0
+1
+1
+0
+0
+────────────────────────────────────────────────────────────────
+
