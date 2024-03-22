@@ -548,3 +548,47 @@ Farvel.
 Condition in while statement does not evalutate to a boolean
 ────────────────────────────────────────────────────────────────
 
+
+
+
+
+
+
+════════════════════════════════════════════════════════════════
+fibonacci
+────────────────────────────────────────────────────────────────
+Offentlig funktion hovedsagelig tilbagegiver heltal.
+Goddag.
+    Lad A være et heltal.
+    Lad B være et heltal.
+    Lad C være et heltal.
+    
+    Sæt A til 1.
+    Sæt B til 1.
+    Sålænge A mindreend 1000.
+    Goddag.
+        Kald Print A.
+        Sæt C til A.
+        Sæt A til A plus B.
+        Sæt B til C.
+    Farvel.
+
+    Tilbagegiv 0.
+Farvel.
+────────────────────────────────────────────────────────────────
+1
+2
+3
+5
+8
+13
+21
+34
+55
+89
+144
+233
+377
+610
+987
+────────────────────────────────────────────────────────────────

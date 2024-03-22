@@ -1,0 +1,18 @@
+Offentlig funktion hovedsagelig tilbagegiver heltal.
+Goddag.
+    Lad A være et heltal.
+    Lad B være et heltal.
+    Lad C være et heltal.
+    
+    Sæt A til 1.
+    Sæt B til 1.
+    Sålænge A mindreend 1000.
+    Goddag.
+        Kald Print A.
+        Sæt C til A.
+        Sæt A til A plus B.
+        Sæt B til C.
+    Farvel.
+
+    Tilbagegiv 0.
+Farvel.
